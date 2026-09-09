@@ -26,7 +26,7 @@ public class LoginActivity extends Activity {
         passwordInput = findViewById(R.id.passwordInput);
 
         Button loginButton = findViewById(R.id.loginButton);
-        TextView createAccount = findViewById(R.id.createAccount);
+        Button createAccount = findViewById(R.id.createAccount);
 
         loginButton.setOnClickListener(v -> login());
 
