@@ -12,10 +12,12 @@ import java.util.Locale;
 
 public class MainActivity extends Activity {
 
-    private TextView balanceText;
-    private TextView historyText;
-    private Button incomeButton;
-    private Button expenseButton;
+private TextView balanceText;
+private TextView historyText;
+private TextView incomeTotalText;
+private TextView expenseTotalText;
+private Button incomeButton;
+private Button expenseButton;
 
     private SharedPreferences preferences;
 
