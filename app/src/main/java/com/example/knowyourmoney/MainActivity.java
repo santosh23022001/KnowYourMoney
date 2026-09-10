@@ -32,9 +32,7 @@ public class MainActivity extends Activity {
 
         incomeButton.setOnClickListener(v -> showAddIncomeDialog());
 
-        expenseButton.setOnClickListener(v -> {
-            // Expense feature will be added next.
-        });
+        expenseButton.setOnClickListener(v -> showAddExpenseDialog());
     }
 
     private void showAddIncomeDialog() {
