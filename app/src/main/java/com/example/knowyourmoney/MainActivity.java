@@ -35,6 +35,8 @@ public class MainActivity extends Activity {
     private static final int CREATE_BACKUP_FILE = 100;
     private static final int OPEN_BACKUP_FILE = 101;
 
+    private String backupData = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -345,7 +347,7 @@ public class MainActivity extends Activity {
 
     private void createBackup() {
 
-        String data =
+        backupData =
                 "KNOWYOURMONEY BACKUP\n" +
                 "total_income=" +
                 preferences.getLong(
@@ -362,19 +364,21 @@ public class MainActivity extends Activity {
                 "history=" +
                 preferences.getString("history", "");
 
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        Intent intent =
+                new Intent(Intent.ACTION_CREATE_DOCUMENT);
+
         intent.setType("text/plain");
+
         intent.putExtra(
                 Intent.EXTRA_TITLE,
                 "KnowYourMoney_Backup.txt"
         );
 
-        startActivityForResult(intent, CREATE_BACKUP_FILE);
-
-        backupData = data;
+        startActivityForResult(
+                intent,
+                CREATE_BACKUP_FILE
+        );
     }
-
-    private String backupData = "";
 
     private void saveBackup(Uri uri) {
 
@@ -382,7 +386,8 @@ public class MainActivity extends Activity {
 
             OutputStreamWriter writer =
                     new OutputStreamWriter(
-                            getContentResolver().openOutputStream(uri)
+                            getContentResolver()
+                                    .openOutputStream(uri)
                     );
 
             BufferedWriter bufferedWriter =
@@ -409,11 +414,19 @@ public class MainActivity extends Activity {
 
     private void chooseBackupFile() {
 
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.setType("text/plain");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        Intent intent =
+                new Intent(Intent.ACTION_OPEN_DOCUMENT);
 
-        startActivityForResult(intent, OPEN_BACKUP_FILE);
+        intent.setType("text/plain");
+
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE
+        );
+
+        startActivityForResult(
+                intent,
+                OPEN_BACKUP_FILE
+        );
     }
 
     private void restoreBackup(Uri uri) {
@@ -428,7 +441,9 @@ public class MainActivity extends Activity {
                             )
                     );
 
-            StringBuilder content = new StringBuilder();
+            StringBuilder content =
+                    new StringBuilder();
+
             String line;
 
             while ((line = reader.readLine()) != null) {
@@ -439,12 +454,15 @@ public class MainActivity extends Activity {
 
             String data = content.toString();
 
-            if (!data.startsWith("KNOWYOURMONEY BACKUP")) {
+            if (!data.startsWith(
+                    "KNOWYOURMONEY BACKUP")) {
+
                 Toast.makeText(
                         this,
                         "Invalid backup file",
                         Toast.LENGTH_SHORT
                 ).show();
+
                 return;
             }
 
@@ -452,25 +470,34 @@ public class MainActivity extends Activity {
 
             long incomeBits = 0;
             long expenseBits = 0;
-            StringBuilder history = new StringBuilder();
+
+            StringBuilder history =
+                    new StringBuilder();
 
             boolean historyStarted = false;
 
             for (String currentLine : lines) {
 
-                if (currentLine.startsWith("total_income=")) {
+                if (currentLine.startsWith(
+                        "total_income=")) {
 
                     incomeBits = Long.parseLong(
-                            currentLine.substring(13).trim()
+                            currentLine
+                                    .substring(13)
+                                    .trim()
                     );
 
-                } else if (currentLine.startsWith("total_expense=")) {
+                } else if (currentLine.startsWith(
+                        "total_expense=")) {
 
                     expenseBits = Long.parseLong(
-                            currentLine.substring(14).trim()
+                            currentLine
+                                    .substring(14)
+                                    .trim()
                     );
 
-                } else if (currentLine.startsWith("history=")) {
+                } else if (currentLine.startsWith(
+                        "history=")) {
 
                     historyStarted = true;
 
@@ -485,38 +512,47 @@ public class MainActivity extends Activity {
                 }
             }
 
+            final long finalIncomeBits = incomeBits;
+            final long finalExpenseBits = expenseBits;
+            final String finalHistory = history.toString();
+
             new AlertDialog.Builder(this)
                     .setTitle("Restore Backup?")
                     .setMessage(
                             "This will replace your current money data with the backup."
                     )
-                    .setNegativeButton("CANCEL", null)
-                    .setPositiveButton("RESTORE", (dialog, which) -> {
+                    .setNegativeButton(
+                            "CANCEL",
+                            null
+                    )
+                    .setPositiveButton(
+                            "RESTORE",
+                            (dialog, which) -> {
 
-                        preferences.edit()
-                                .putLong(
-                                        "total_income",
-                                        incomeBits
-                                )
-                                .putLong(
-                                        "total_expense",
-                                        expenseBits
-                                )
-                                .putString(
-                                        "history",
-                                        history.toString()
-                                )
-                                .apply();
+                                preferences.edit()
+                                        .putLong(
+                                                "total_income",
+                                                finalIncomeBits
+                                        )
+                                        .putLong(
+                                                "total_expense",
+                                                finalExpenseBits
+                                        )
+                                        .putString(
+                                                "history",
+                                                finalHistory
+                                        )
+                                        .apply();
 
-                        updateBalance();
-                        updateHistory();
+                                updateBalance();
+                                updateHistory();
 
-                        Toast.makeText(
-                                this,
-                                "Backup restored successfully!",
-                                Toast.LENGTH_LONG
-                        ).show();
-                    })
+                                Toast.makeText(
+                                        this,
+                                        "Backup restored successfully!",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            })
                     .show();
 
         } catch (Exception e) {
@@ -535,21 +571,25 @@ public class MainActivity extends Activity {
             int resultCode,
             Intent data
     ) {
+
         super.onActivityResult(
                 requestCode,
                 resultCode,
                 data
         );
 
-        if (resultCode == RESULT_OK && data != null) {
+        if (resultCode == RESULT_OK &&
+                data != null) {
 
             Uri uri = data.getData();
 
-            if (requestCode == CREATE_BACKUP_FILE) {
+            if (requestCode ==
+                    CREATE_BACKUP_FILE) {
 
                 saveBackup(uri);
 
-            } else if (requestCode == OPEN_BACKUP_FILE) {
+            } else if (requestCode ==
+                    OPEN_BACKUP_FILE) {
 
                 restoreBackup(uri);
             }
