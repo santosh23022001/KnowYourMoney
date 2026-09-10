@@ -21,12 +21,12 @@
             android:layout_marginBottom="30dp" />
 
         <TextView
-            android:id="@+id/balanceText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Balance: ₹0"
-            android:textSize="22sp"
-            android:layout_marginBottom="20dp" />
+    android:id="@+id/balanceText"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Balance: ₹0"
+    android:textSize="22sp"
+    android:layout_marginBottom="20dp" />
 
         <TextView
             android:id="@+id/historyText"
