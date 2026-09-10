@@ -53,9 +53,19 @@ expenseButton = findViewById(R.id.expenseButton);
 
         double balance = totalIncome - totalExpense;
 
-        balanceText.setText(
-                String.format(Locale.getDefault(), "Balance: ₹%.2f", balance)
-        );
+        double balance = totalIncome - totalExpense;
+
+incomeTotalText.setText(
+        String.format(Locale.getDefault(), "Total Income: ₹%.2f", totalIncome)
+);
+
+expenseTotalText.setText(
+        String.format(Locale.getDefault(), "Total Expense: ₹%.2f", totalExpense)
+);
+
+balanceText.setText(
+        String.format(Locale.getDefault(), "Balance: ₹%.2f", balance)
+);
     }
 
     private void updateHistory() {
