@@ -1,19 +1,22 @@
 package com.example.knowyourmoney;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.os.Bundle;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.LinearLayout;
-import android.view.ViewGroup;
-import android.view.Gravity;
+import android.widget.Toast;
+
+import java.util.Locale;
 
 public class MainActivity extends Activity {
 
     private TextView balanceText;
+    private TextView historyText;
+    private Button incomeButton;
+    private Button expenseButton;
+
     private SharedPreferences preferences;
 
     @Override
@@ -22,193 +25,239 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         balanceText = findViewById(R.id.balanceText);
-
-        Button incomeButton = findViewById(R.id.incomeButton);
-        Button expenseButton = findViewById(R.id.expenseButton);
+        historyText = findViewById(R.id.historyText);
+        incomeButton = findViewById(R.id.incomeButton);
+        expenseButton = findViewById(R.id.expenseButton);
 
         preferences = getSharedPreferences("money_data", MODE_PRIVATE);
-
-        updateBalance();
 
         incomeButton.setOnClickListener(v -> showAddIncomeDialog());
 
         expenseButton.setOnClickListener(v -> showAddExpenseDialog());
-    }
 
-    private void showAddIncomeDialog() {
-
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(40, 10, 40, 10);
-
-        EditText amountInput = new EditText(this);
-        amountInput.setHint("Amount");
-        amountInput.setInputType(
-                android.text.InputType.TYPE_CLASS_NUMBER |
-                android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-        );
-
-        EditText sourceInput = new EditText(this);
-        sourceInput.setHint("Income Source");
-
-        layout.addView(amountInput,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        layout.addView(sourceInput,
-                new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Add Income")
-                .setView(layout)
-                .setNegativeButton("CANCEL", null)
-                .setPositiveButton("SAVE", null)
-                .create();
-
-        dialog.setOnShowListener(d -> {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-
-                String amountText = amountInput.getText().toString().trim();
-                String source = sourceInput.getText().toString().trim();
-
-                if (amountText.isEmpty()) {
-                    amountInput.setError("Enter amount");
-                    return;
-                }
-
-                if (source.isEmpty()) {
-                    sourceInput.setError("Enter income source");
-                    return;
-                }
-
-                double amount = Double.parseDouble(amountText);
-
-                double oldIncome =
-                        Double.longBitsToDouble(
-                                preferences.getLong(
-                                        "total_income",
-                                        Double.doubleToLongBits(0.0)
-                                )
-                        );
-
-                double newIncome = oldIncome + amount;
-
-                preferences.edit()
-                        .putLong(
-                                "total_income",
-                                Double.doubleToLongBits(newIncome)
-                        )
-                        .apply();
-
-                updateBalance();
-
-                dialog.dismiss();
-            });
-        });
-
-        dialog.show();
+        updateBalance();
+        updateHistory();
     }
 
     private void updateBalance() {
 
-        double income =
-                Double.longBitsToDouble(
-                        preferences.getLong(
-                                "total_income",
-                                Double.doubleToLongBits(0.0)
-                        )
-                );
+        long incomeBits = preferences.getLong("total_income", Double.doubleToLongBits(0));
+        long expenseBits = preferences.getLong("total_expense", Double.doubleToLongBits(0));
 
-        double expense =
-                Double.longBitsToDouble(
-                        preferences.getLong(
-                                "total_expense",
-                                Double.doubleToLongBits(0.0)
-                        )
-                );
+        double totalIncome = Double.longBitsToDouble(incomeBits);
+        double totalExpense = Double.longBitsToDouble(expenseBits);
 
-        double balance = income - expense;
+        double balance = totalIncome - totalExpense;
 
         balanceText.setText(
-                String.format("Balance: ₹%.2f", balance)
+                String.format(Locale.getDefault(), "Balance: ₹%.2f", balance)
         );
-    }private void showAddExpenseDialog() {
+    }
 
-    LinearLayout layout = new LinearLayout(this);
-    layout.setOrientation(LinearLayout.VERTICAL);
-    layout.setPadding(40, 10, 40, 10);
+    private void updateHistory() {
 
-    EditText amountInput = new EditText(this);
-    amountInput.setHint("Amount");
-    amountInput.setInputType(
-            android.text.InputType.TYPE_CLASS_NUMBER |
-            android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-    );
+        String history = preferences.getString("history", "");
 
-    EditText categoryInput = new EditText(this);
-    categoryInput.setHint("Expense Category");
+        if (history.isEmpty()) {
+            historyText.setText("Transaction History\n\nNo transactions yet.");
+        } else {
+            historyText.setText("Transaction History\n\n" + history);
+        }
+    }
 
-    layout.addView(amountInput,
-            new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+    private void showAddIncomeDialog() {
 
-    layout.addView(categoryInput,
-            new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        EditText amountInput = new EditText(this);
+        amountInput.setHint("Amount");
 
-    AlertDialog dialog = new AlertDialog.Builder(this)
-            .setTitle("Add Expense")
-            .setView(layout)
-            .setNegativeButton("CANCEL", null)
-            .setPositiveButton("SAVE", null)
-            .create();
+        EditText sourceInput = new EditText(this);
+        sourceInput.setHint("Income Source");
 
-    dialog.setOnShowListener(d -> {
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(40, 10, 40, 10);
 
-            String amountText = amountInput.getText().toString().trim();
-            String category = categoryInput.getText().toString().trim();
+        layout.addView(amountInput);
+        layout.addView(sourceInput);
 
-            if (amountText.isEmpty()) {
-                amountInput.setError("Enter amount");
-                return;
-            }
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Add Income")
+                .setView(layout)
+                .setPositiveButton("ADD", (dialog, which) -> {
 
-            if (category.isEmpty()) {
-                categoryInput.setError("Enter category");
-                return;
-            }
+                    String amountText = amountInput.getText().toString().trim();
+                    String source = sourceInput.getText().toString().trim();
 
-            double amount = Double.parseDouble(amountText);
+                    if (amountText.isEmpty() || source.isEmpty()) {
+                        Toast.makeText(
+                                this,
+                                "Enter amount and income source",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
 
-            double oldExpense =
-                    Double.longBitsToDouble(
-                            preferences.getLong(
-                                    "total_expense",
-                                    Double.doubleToLongBits(0.0)
-                            )
-                    );
+                    try {
 
-            double newExpense = oldExpense + amount;
+                        double amount = Double.parseDouble(amountText);
 
-            preferences.edit()
-                    .putLong(
-                            "total_expense",
-                            Double.doubleToLongBits(newExpense)
-                    )
-                    .apply();
+                        if (amount <= 0) {
+                            Toast.makeText(
+                                    this,
+                                    "Enter a valid amount",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                            return;
+                        }
 
-            updateBalance();
+                        long incomeBits = preferences.getLong(
+                                "total_income",
+                                Double.doubleToLongBits(0)
+                        );
 
-            dialog.dismiss();
-        });
-    });
+                        double oldIncome = Double.longBitsToDouble(incomeBits);
+                        double newIncome = oldIncome + amount;
 
-    dialog.show();
+                        String oldHistory = preferences.getString("history", "");
+
+                        String newEntry = String.format(
+                                Locale.getDefault(),
+                                "Income: ₹%.2f - %s",
+                                amount,
+                                source
+                        );
+
+                        String newHistory = newEntry;
+
+                        if (!oldHistory.isEmpty()) {
+                            newHistory = newEntry + "\n" + oldHistory;
+                        }
+
+                        preferences.edit()
+                                .putLong(
+                                        "total_income",
+                                        Double.doubleToLongBits(newIncome)
+                                )
+                                .putString("history", newHistory)
+                                .apply();
+
+                        updateBalance();
+                        updateHistory();
+
+                        Toast.makeText(
+                                this,
+                                "Income added successfully!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    } catch (NumberFormatException e) {
+
+                        Toast.makeText(
+                                this,
+                                "Enter a valid amount",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                })
+                .setNegativeButton("CANCEL", null)
+                .show();
+    }
+
+    private void showAddExpenseDialog() {
+
+        EditText amountInput = new EditText(this);
+        amountInput.setHint("Amount");
+
+        EditText categoryInput = new EditText(this);
+        categoryInput.setHint("Expense Category");
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(40, 10, 40, 10);
+
+        layout.addView(amountInput);
+        layout.addView(categoryInput);
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Add Expense")
+                .setView(layout)
+                .setPositiveButton("ADD", (dialog, which) -> {
+
+                    String amountText = amountInput.getText().toString().trim();
+                    String category = categoryInput.getText().toString().trim();
+
+                    if (amountText.isEmpty() || category.isEmpty()) {
+                        Toast.makeText(
+                                this,
+                                "Enter amount and expense category",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
+
+                    try {
+
+                        double amount = Double.parseDouble(amountText);
+
+                        if (amount <= 0) {
+                            Toast.makeText(
+                                    this,
+                                    "Enter a valid amount",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                            return;
+                        }
+
+                        long expenseBits = preferences.getLong(
+                                "total_expense",
+                                Double.doubleToLongBits(0)
+                        );
+
+                        double oldExpense = Double.longBitsToDouble(expenseBits);
+                        double newExpense = oldExpense + amount;
+
+                        String oldHistory = preferences.getString("history", "");
+
+                        String newEntry = String.format(
+                                Locale.getDefault(),
+                                "Expense: ₹%.2f - %s",
+                                amount,
+                                category
+                        );
+
+                        String newHistory = newEntry;
+
+                        if (!oldHistory.isEmpty()) {
+                            newHistory = newEntry + "\n" + oldHistory;
+                        }
+
+                        preferences.edit()
+                                .putLong(
+                                        "total_expense",
+                                        Double.doubleToLongBits(newExpense)
+                                )
+                                .putString("history", newHistory)
+                                .apply();
+
+                        updateBalance();
+                        updateHistory();
+
+                        Toast.makeText(
+                                this,
+                                "Expense added successfully!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    } catch (NumberFormatException e) {
+
+                        Toast.makeText(
+                                this,
+                                "Enter a valid amount",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                })
+                .setNegativeButton("CANCEL", null)
+                .show();
     }
 }
