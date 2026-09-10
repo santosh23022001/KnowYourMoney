@@ -8,34 +8,48 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center">
+        android:padding="24dp">
 
         <TextView
             android:id="@+id/titleText"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Know Your Money"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:layout_marginBottom="30dp" />
+            android:gravity="center"
+            android:layout_marginBottom="25dp" />
 
         <TextView
-    android:id="@+id/balanceText"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Balance: ₹0"
-    android:textSize="22sp"
-    android:layout_marginBottom="20dp" />
-
-        <TextView
-            android:id="@+id/historyText"
+            android:id="@+id/incomeTotalText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Transaction History"
-            android:textSize="18sp"
+            android:text="Total Income: ₹0.00"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
+            android:padding="16dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:id="@+id/expenseTotalText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Expense: ₹0.00"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:id="@+id/balanceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Balance: ₹0.00"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="18dp"
+            android:layout_marginBottom="25dp" />
 
         <Button
             android:id="@+id/incomeButton"
@@ -49,6 +63,16 @@
             android:layout_height="wrap_content"
             android:text="- ADD EXPENSE"
             android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/historyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Transaction History\n\nNo transactions yet."
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="20dp" />
 
     </LinearLayout>
 
