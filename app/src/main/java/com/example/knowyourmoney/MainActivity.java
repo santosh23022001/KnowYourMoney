@@ -2,7 +2,9 @@ package com.example.knowyourmoney;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,6 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.BufferedWriter;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
@@ -21,8 +27,13 @@ public class MainActivity extends Activity {
 
     private Button incomeButton;
     private Button expenseButton;
+    private Button backupButton;
+    private Button restoreButton;
 
     private SharedPreferences preferences;
+
+    private static final int CREATE_BACKUP_FILE = 100;
+    private static final int OPEN_BACKUP_FILE = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +47,16 @@ public class MainActivity extends Activity {
 
         incomeButton = findViewById(R.id.incomeButton);
         expenseButton = findViewById(R.id.expenseButton);
+        backupButton = findViewById(R.id.backupButton);
+        restoreButton = findViewById(R.id.restoreButton);
 
         preferences = getSharedPreferences("money_data", MODE_PRIVATE);
 
         incomeButton.setOnClickListener(v -> showAddIncomeDialog());
-
         expenseButton.setOnClickListener(v -> showAddExpenseDialog());
+
+        backupButton.setOnClickListener(v -> createBackup());
+        restoreButton.setOnClickListener(v -> chooseBackupFile());
 
         updateBalance();
         updateHistory();
@@ -326,5 +341,218 @@ public class MainActivity extends Activity {
                 })
                 .setNegativeButton("CANCEL", null)
                 .show();
+    }
+
+    private void createBackup() {
+
+        String data =
+                "KNOWYOURMONEY BACKUP\n" +
+                "total_income=" +
+                preferences.getLong(
+                        "total_income",
+                        Double.doubleToLongBits(0)
+                ) +
+                "\n" +
+                "total_expense=" +
+                preferences.getLong(
+                        "total_expense",
+                        Double.doubleToLongBits(0)
+                ) +
+                "\n" +
+                "history=" +
+                preferences.getString("history", "");
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/plain");
+        intent.putExtra(
+                Intent.EXTRA_TITLE,
+                "KnowYourMoney_Backup.txt"
+        );
+
+        startActivityForResult(intent, CREATE_BACKUP_FILE);
+
+        backupData = data;
+    }
+
+    private String backupData = "";
+
+    private void saveBackup(Uri uri) {
+
+        try {
+
+            OutputStreamWriter writer =
+                    new OutputStreamWriter(
+                            getContentResolver().openOutputStream(uri)
+                    );
+
+            BufferedWriter bufferedWriter =
+                    new BufferedWriter(writer);
+
+            bufferedWriter.write(backupData);
+            bufferedWriter.close();
+
+            Toast.makeText(
+                    this,
+                    "Backup saved successfully!",
+                    Toast.LENGTH_LONG
+            ).show();
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Backup failed",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    private void chooseBackupFile() {
+
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("text/plain");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        startActivityForResult(intent, OPEN_BACKUP_FILE);
+    }
+
+    private void restoreBackup(Uri uri) {
+
+        try {
+
+            BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    getContentResolver()
+                                            .openInputStream(uri)
+                            )
+                    );
+
+            StringBuilder content = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+
+            reader.close();
+
+            String data = content.toString();
+
+            if (!data.startsWith("KNOWYOURMONEY BACKUP")) {
+                Toast.makeText(
+                        this,
+                        "Invalid backup file",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            String[] lines = data.split("\n");
+
+            long incomeBits = 0;
+            long expenseBits = 0;
+            StringBuilder history = new StringBuilder();
+
+            boolean historyStarted = false;
+
+            for (String currentLine : lines) {
+
+                if (currentLine.startsWith("total_income=")) {
+
+                    incomeBits = Long.parseLong(
+                            currentLine.substring(13).trim()
+                    );
+
+                } else if (currentLine.startsWith("total_expense=")) {
+
+                    expenseBits = Long.parseLong(
+                            currentLine.substring(14).trim()
+                    );
+
+                } else if (currentLine.startsWith("history=")) {
+
+                    historyStarted = true;
+
+                    history.append(
+                            currentLine.substring(8)
+                    );
+
+                } else if (historyStarted) {
+
+                    history.append("\n");
+                    history.append(currentLine);
+                }
+            }
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Restore Backup?")
+                    .setMessage(
+                            "This will replace your current money data with the backup."
+                    )
+                    .setNegativeButton("CANCEL", null)
+                    .setPositiveButton("RESTORE", (dialog, which) -> {
+
+                        preferences.edit()
+                                .putLong(
+                                        "total_income",
+                                        incomeBits
+                                )
+                                .putLong(
+                                        "total_expense",
+                                        expenseBits
+                                )
+                                .putString(
+                                        "history",
+                                        history.toString()
+                                )
+                                .apply();
+
+                        updateBalance();
+                        updateHistory();
+
+                        Toast.makeText(
+                                this,
+                                "Backup restored successfully!",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    })
+                    .show();
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Restore failed",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data
+    ) {
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data
+        );
+
+        if (resultCode == RESULT_OK && data != null) {
+
+            Uri uri = data.getData();
+
+            if (requestCode == CREATE_BACKUP_FILE) {
+
+                saveBackup(uri);
+
+            } else if (requestCode == OPEN_BACKUP_FILE) {
+
+                restoreBackup(uri);
+            }
+        }
     }
 }
