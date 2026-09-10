@@ -29,6 +29,7 @@ public class MainActivity extends Activity {
     private Button expenseButton;
     private Button backupButton;
     private Button restoreButton;
+    private Button clearHistoryButton;
 
     private SharedPreferences preferences;
 
@@ -51,6 +52,7 @@ public class MainActivity extends Activity {
         expenseButton = findViewById(R.id.expenseButton);
         backupButton = findViewById(R.id.backupButton);
         restoreButton = findViewById(R.id.restoreButton);
+        clearHistoryButton = findViewById(R.id.clearHistoryButton);
 
         preferences = getSharedPreferences("money_data", MODE_PRIVATE);
 
@@ -59,6 +61,8 @@ public class MainActivity extends Activity {
 
         backupButton.setOnClickListener(v -> createBackup());
         restoreButton.setOnClickListener(v -> chooseBackupFile());
+
+        clearHistoryButton.setOnClickListener(v -> showClearHistoryDialog());
 
         updateBalance();
         updateHistory();
@@ -345,6 +349,40 @@ public class MainActivity extends Activity {
                 .show();
     }
 
+    private void showClearHistoryDialog() {
+
+        new AlertDialog.Builder(this)
+                .setTitle("Clear All History?")
+                .setMessage(
+                        "This will delete all transactions and reset your income, expense and balance to ₹0.00."
+                )
+                .setNegativeButton("CANCEL", null)
+                .setPositiveButton("CLEAR", (dialog, which) -> {
+
+                    preferences.edit()
+                            .putLong(
+                                    "total_income",
+                                    Double.doubleToLongBits(0)
+                            )
+                            .putLong(
+                                    "total_expense",
+                                    Double.doubleToLongBits(0)
+                            )
+                            .putString("history", "")
+                            .apply();
+
+                    updateBalance();
+                    updateHistory();
+
+                    Toast.makeText(
+                            this,
+                            "All history cleared!",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                })
+                .show();
+    }
+
     private void createBackup() {
 
         backupData =
@@ -592,7 +630,4 @@ public class MainActivity extends Activity {
                     OPEN_BACKUP_FILE) {
 
                 restoreBackup(uri);
-            }
-        }
-    }
-}
+   
