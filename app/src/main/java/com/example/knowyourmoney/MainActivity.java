@@ -1,10 +1,12 @@
 package com.example.knowyourmoney;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,12 +14,13 @@ import java.util.Locale;
 
 public class MainActivity extends Activity {
 
-private TextView balanceText;
-private TextView historyText;
-private TextView incomeTotalText;
-private TextView expenseTotalText;
-private Button incomeButton;
-private Button expenseButton;
+    private TextView balanceText;
+    private TextView historyText;
+    private TextView incomeTotalText;
+    private TextView expenseTotalText;
+
+    private Button incomeButton;
+    private Button expenseButton;
 
     private SharedPreferences preferences;
 
@@ -27,11 +30,12 @@ private Button expenseButton;
         setContentView(R.layout.activity_main);
 
         balanceText = findViewById(R.id.balanceText);
-historyText = findViewById(R.id.historyText);
-incomeTotalText = findViewById(R.id.incomeTotalText);
-expenseTotalText = findViewById(R.id.expenseTotalText);
-incomeButton = findViewById(R.id.incomeButton);
-expenseButton = findViewById(R.id.expenseButton);
+        historyText = findViewById(R.id.historyText);
+        incomeTotalText = findViewById(R.id.incomeTotalText);
+        expenseTotalText = findViewById(R.id.expenseTotalText);
+
+        incomeButton = findViewById(R.id.incomeButton);
+        expenseButton = findViewById(R.id.expenseButton);
 
         preferences = getSharedPreferences("money_data", MODE_PRIVATE);
 
@@ -45,27 +49,44 @@ expenseButton = findViewById(R.id.expenseButton);
 
     private void updateBalance() {
 
-        long incomeBits = preferences.getLong("total_income", Double.doubleToLongBits(0));
-        long expenseBits = preferences.getLong("total_expense", Double.doubleToLongBits(0));
+        long incomeBits = preferences.getLong(
+                "total_income",
+                Double.doubleToLongBits(0)
+        );
+
+        long expenseBits = preferences.getLong(
+                "total_expense",
+                Double.doubleToLongBits(0)
+        );
 
         double totalIncome = Double.longBitsToDouble(incomeBits);
         double totalExpense = Double.longBitsToDouble(expenseBits);
 
         double balance = totalIncome - totalExpense;
 
-        double balance = totalIncome - totalExpense;
+        incomeTotalText.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "Total Income: ₹%.2f",
+                        totalIncome
+                )
+        );
 
-incomeTotalText.setText(
-        String.format(Locale.getDefault(), "Total Income: ₹%.2f", totalIncome)
-);
+        expenseTotalText.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "Total Expense: ₹%.2f",
+                        totalExpense
+                )
+        );
 
-expenseTotalText.setText(
-        String.format(Locale.getDefault(), "Total Expense: ₹%.2f", totalExpense)
-);
-
-balanceText.setText(
-        String.format(Locale.getDefault(), "Balance: ₹%.2f", balance)
-);
+        balanceText.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "Balance: ₹%.2f",
+                        balance
+                )
+        );
     }
 
     private void updateHistory() {
@@ -73,9 +94,13 @@ balanceText.setText(
         String history = preferences.getString("history", "");
 
         if (history.isEmpty()) {
-            historyText.setText("Transaction History\n\nNo transactions yet.");
+            historyText.setText(
+                    "Transaction History\n\nNo transactions yet."
+            );
         } else {
-            historyText.setText("Transaction History\n\n" + history);
+            historyText.setText(
+                    "Transaction History\n\n" + history
+            );
         }
     }
 
@@ -83,24 +108,28 @@ balanceText.setText(
 
         EditText amountInput = new EditText(this);
         amountInput.setHint("Amount");
+        amountInput.setInputType(2);
 
         EditText sourceInput = new EditText(this);
         sourceInput.setHint("Income Source");
 
-        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
-        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(40, 10, 40, 10);
 
         layout.addView(amountInput);
         layout.addView(sourceInput);
 
-        new android.app.AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Add Income")
                 .setView(layout)
                 .setPositiveButton("ADD", (dialog, which) -> {
 
-                    String amountText = amountInput.getText().toString().trim();
-                    String source = sourceInput.getText().toString().trim();
+                    String amountText =
+                            amountInput.getText().toString().trim();
+
+                    String source =
+                            sourceInput.getText().toString().trim();
 
                     if (amountText.isEmpty() || source.isEmpty()) {
                         Toast.makeText(
@@ -113,7 +142,8 @@ balanceText.setText(
 
                     try {
 
-                        double amount = Double.parseDouble(amountText);
+                        double amount =
+                                Double.parseDouble(amountText);
 
                         if (amount <= 0) {
                             Toast.makeText(
@@ -129,10 +159,14 @@ balanceText.setText(
                                 Double.doubleToLongBits(0)
                         );
 
-                        double oldIncome = Double.longBitsToDouble(incomeBits);
-                        double newIncome = oldIncome + amount;
+                        double oldIncome =
+                                Double.longBitsToDouble(incomeBits);
 
-                        String oldHistory = preferences.getString("history", "");
+                        double newIncome =
+                                oldIncome + amount;
+
+                        String oldHistory =
+                                preferences.getString("history", "");
 
                         String newEntry = String.format(
                                 Locale.getDefault(),
@@ -144,7 +178,8 @@ balanceText.setText(
                         String newHistory = newEntry;
 
                         if (!oldHistory.isEmpty()) {
-                            newHistory = newEntry + "\n" + oldHistory;
+                            newHistory =
+                                    newEntry + "\n" + oldHistory;
                         }
 
                         preferences.edit()
@@ -152,7 +187,10 @@ balanceText.setText(
                                         "total_income",
                                         Double.doubleToLongBits(newIncome)
                                 )
-                                .putString("history", newHistory)
+                                .putString(
+                                        "history",
+                                        newHistory
+                                )
                                 .apply();
 
                         updateBalance();
@@ -181,26 +219,32 @@ balanceText.setText(
 
         EditText amountInput = new EditText(this);
         amountInput.setHint("Amount");
+        amountInput.setInputType(2);
 
         EditText categoryInput = new EditText(this);
         categoryInput.setHint("Expense Category");
 
-        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
-        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(40, 10, 40, 10);
 
         layout.addView(amountInput);
         layout.addView(categoryInput);
 
-        new android.app.AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Add Expense")
                 .setView(layout)
                 .setPositiveButton("ADD", (dialog, which) -> {
 
-                    String amountText = amountInput.getText().toString().trim();
-                    String category = categoryInput.getText().toString().trim();
+                    String amountText =
+                            amountInput.getText().toString().trim();
 
-                    if (amountText.isEmpty() || category.isEmpty()) {
+                    String category =
+                            categoryInput.getText().toString().trim();
+
+                    if (amountText.isEmpty() ||
+                            category.isEmpty()) {
+
                         Toast.makeText(
                                 this,
                                 "Enter amount and expense category",
@@ -211,7 +255,8 @@ balanceText.setText(
 
                     try {
 
-                        double amount = Double.parseDouble(amountText);
+                        double amount =
+                                Double.parseDouble(amountText);
 
                         if (amount <= 0) {
                             Toast.makeText(
@@ -227,10 +272,14 @@ balanceText.setText(
                                 Double.doubleToLongBits(0)
                         );
 
-                        double oldExpense = Double.longBitsToDouble(expenseBits);
-                        double newExpense = oldExpense + amount;
+                        double oldExpense =
+                                Double.longBitsToDouble(expenseBits);
 
-                        String oldHistory = preferences.getString("history", "");
+                        double newExpense =
+                                oldExpense + amount;
+
+                        String oldHistory =
+                                preferences.getString("history", "");
 
                         String newEntry = String.format(
                                 Locale.getDefault(),
@@ -242,7 +291,8 @@ balanceText.setText(
                         String newHistory = newEntry;
 
                         if (!oldHistory.isEmpty()) {
-                            newHistory = newEntry + "\n" + oldHistory;
+                            newHistory =
+                                    newEntry + "\n" + oldHistory;
                         }
 
                         preferences.edit()
@@ -250,7 +300,10 @@ balanceText.setText(
                                         "total_expense",
                                         Double.doubleToLongBits(newExpense)
                                 )
-                                .putString("history", newHistory)
+                                .putString(
+                                        "history",
+                                        newHistory
+                                )
                                 .apply();
 
                         updateBalance();
