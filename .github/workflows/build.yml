@@ -31,11 +31,22 @@ jobs:
           unzip -q gradle-8.7-bin.zip
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
 
-      - name: Build APK
-        run: gradle assembleDebug
+      - name: Prepare signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/KnowYourMoney-release.jks
+
+      - name: Build signed APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          gradle assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: KnowYourMoney-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: KnowYourMoney-release
+          path: app/build/outputs/apk/release/app-release.apk
