@@ -32,10 +32,10 @@ jobs:
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
 
       - name: Prepare signing key
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > app/KnowYourMoney-release.jks
+  env:
+    KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+  run: |
+    printf '%s' "$KEYSTORE_BASE64" | base64 --decode --ignore-garbage > app/KnowYourMoney-release.jks
 
       - name: Build signed APK
         env:
