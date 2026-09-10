@@ -25,8 +25,14 @@
         android:textSize="22sp"
         android:layout_marginBottom="30dp"/>
 
-    <Button
-        android:id="@+id/incomeButton"
+    <TextView
+    android:id="@+id/historyText"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Transaction History"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    android:layout_marginBottom="20dp" />
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="+ Add Income"/>
