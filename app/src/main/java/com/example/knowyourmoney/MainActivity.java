@@ -58,10 +58,8 @@ public class MainActivity extends Activity {
 
         incomeButton.setOnClickListener(v -> showAddIncomeDialog());
         expenseButton.setOnClickListener(v -> showAddExpenseDialog());
-
         backupButton.setOnClickListener(v -> createBackup());
         restoreButton.setOnClickListener(v -> chooseBackupFile());
-
         clearHistoryButton.setOnClickListener(v -> showClearHistoryDialog());
 
         updateBalance();
@@ -354,7 +352,7 @@ public class MainActivity extends Activity {
         new AlertDialog.Builder(this)
                 .setTitle("Clear All History?")
                 .setMessage(
-                        "This will delete all transactions and reset your income, expense and balance to ₹0.00."
+                        "This will delete all transactions and reset income, expense and balance to ₹0.00."
                 )
                 .setNegativeButton("CANCEL", null)
                 .setPositiveButton("CLEAR", (dialog, which) -> {
@@ -492,8 +490,7 @@ public class MainActivity extends Activity {
 
             String data = content.toString();
 
-            if (!data.startsWith(
-                    "KNOWYOURMONEY BACKUP")) {
+            if (!data.startsWith("KNOWYOURMONEY BACKUP")) {
 
                 Toast.makeText(
                         this,
@@ -516,26 +513,19 @@ public class MainActivity extends Activity {
 
             for (String currentLine : lines) {
 
-                if (currentLine.startsWith(
-                        "total_income=")) {
+                if (currentLine.startsWith("total_income=")) {
 
                     incomeBits = Long.parseLong(
-                            currentLine
-                                    .substring(13)
-                                    .trim()
+                            currentLine.substring(13).trim()
                     );
 
-                } else if (currentLine.startsWith(
-                        "total_expense=")) {
+                } else if (currentLine.startsWith("total_expense=")) {
 
                     expenseBits = Long.parseLong(
-                            currentLine
-                                    .substring(14)
-                                    .trim()
+                            currentLine.substring(14).trim()
                     );
 
-                } else if (currentLine.startsWith(
-                        "history=")) {
+                } else if (currentLine.startsWith("history=")) {
 
                     historyStarted = true;
 
@@ -550,19 +540,16 @@ public class MainActivity extends Activity {
                 }
             }
 
-            final long finalIncomeBits = incomeBits;
-            final long finalExpenseBits = expenseBits;
-            final String finalHistory = history.toString();
+            final long savedIncome = incomeBits;
+            final long savedExpense = expenseBits;
+            final String savedHistory = history.toString();
 
             new AlertDialog.Builder(this)
                     .setTitle("Restore Backup?")
                     .setMessage(
                             "This will replace your current money data with the backup."
                     )
-                    .setNegativeButton(
-                            "CANCEL",
-                            null
-                    )
+                    .setNegativeButton("CANCEL", null)
                     .setPositiveButton(
                             "RESTORE",
                             (dialog, which) -> {
@@ -570,15 +557,15 @@ public class MainActivity extends Activity {
                                 preferences.edit()
                                         .putLong(
                                                 "total_income",
-                                                finalIncomeBits
+                                                savedIncome
                                         )
                                         .putLong(
                                                 "total_expense",
-                                                finalExpenseBits
+                                                savedExpense
                                         )
                                         .putString(
                                                 "history",
-                                                finalHistory
+                                                savedHistory
                                         )
                                         .apply();
 
@@ -590,7 +577,8 @@ public class MainActivity extends Activity {
                                         "Backup restored successfully!",
                                         Toast.LENGTH_LONG
                                 ).show();
-                            })
+                            }
+                    )
                     .show();
 
         } catch (Exception e) {
@@ -616,18 +604,18 @@ public class MainActivity extends Activity {
                 data
         );
 
-        if (resultCode == RESULT_OK &&
-                data != null) {
+        if (resultCode == RESULT_OK && data != null) {
 
             Uri uri = data.getData();
 
-            if (requestCode ==
-                    CREATE_BACKUP_FILE) {
+            if (requestCode == CREATE_BACKUP_FILE) {
 
                 saveBackup(uri);
 
-            } else if (requestCode ==
-                    OPEN_BACKUP_FILE) {
+            } else if (requestCode == OPEN_BACKUP_FILE) {
 
                 restoreBackup(uri);
-   
+            }
+        }
+    }
+}
