@@ -15,10 +15,12 @@ android {
     }
     signingConfigs {
     release {
-        storeFile file("KnowYourMoney-release.jks")
-        storePassword System.getenv("KEYSTORE_PASSWORD")
-        keyAlias System.getenv("KEY_ALIAS")
-        keyPassword System.getenv("KEY_PASSWORD")
+    storeFile file("KnowYourMoney-release.jks")
+    storePassword System.getenv("KEYSTORE_PASSWORD")
+    keyAlias System.getenv("KEY_ALIAS")
+    keyPassword System.getenv("KEY_PASSWORD")
+    storeType "PKCS12"
+    }
     }
 }
 
