@@ -27,9 +27,11 @@ private Button expenseButton;
         setContentView(R.layout.activity_main);
 
         balanceText = findViewById(R.id.balanceText);
-        historyText = findViewById(R.id.historyText);
-        incomeButton = findViewById(R.id.incomeButton);
-        expenseButton = findViewById(R.id.expenseButton);
+historyText = findViewById(R.id.historyText);
+incomeTotalText = findViewById(R.id.incomeTotalText);
+expenseTotalText = findViewById(R.id.expenseTotalText);
+incomeButton = findViewById(R.id.incomeButton);
+expenseButton = findViewById(R.id.expenseButton);
 
         preferences = getSharedPreferences("money_data", MODE_PRIVATE);
 
