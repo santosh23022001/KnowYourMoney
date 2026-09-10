@@ -135,5 +135,80 @@ public class MainActivity extends Activity {
         balanceText.setText(
                 String.format("Balance: ₹%.2f", balance)
         );
+    }private void showAddExpenseDialog() {
+
+    LinearLayout layout = new LinearLayout(this);
+    layout.setOrientation(LinearLayout.VERTICAL);
+    layout.setPadding(40, 10, 40, 10);
+
+    EditText amountInput = new EditText(this);
+    amountInput.setHint("Amount");
+    amountInput.setInputType(
+            android.text.InputType.TYPE_CLASS_NUMBER |
+            android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+    );
+
+    EditText categoryInput = new EditText(this);
+    categoryInput.setHint("Expense Category");
+
+    layout.addView(amountInput,
+            new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+
+    layout.addView(categoryInput,
+            new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+
+    AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle("Add Expense")
+            .setView(layout)
+            .setNegativeButton("CANCEL", null)
+            .setPositiveButton("SAVE", null)
+            .create();
+
+    dialog.setOnShowListener(d -> {
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+
+            String amountText = amountInput.getText().toString().trim();
+            String category = categoryInput.getText().toString().trim();
+
+            if (amountText.isEmpty()) {
+                amountInput.setError("Enter amount");
+                return;
+            }
+
+            if (category.isEmpty()) {
+                categoryInput.setError("Enter category");
+                return;
+            }
+
+            double amount = Double.parseDouble(amountText);
+
+            double oldExpense =
+                    Double.longBitsToDouble(
+                            preferences.getLong(
+                                    "total_expense",
+                                    Double.doubleToLongBits(0.0)
+                            )
+                    );
+
+            double newExpense = oldExpense + amount;
+
+            preferences.edit()
+                    .putLong(
+                            "total_expense",
+                            Double.doubleToLongBits(newExpense)
+                    )
+                    .apply();
+
+            updateBalance();
+
+            dialog.dismiss();
+        });
+    });
+
+    dialog.show();
     }
 }
