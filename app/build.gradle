@@ -12,7 +12,8 @@ android {
         targetSdk 35
         versionCode 1
         versionName "1.0"
-    }signingConfigs {
+    }
+    signingConfigs {
     release {
         storeFile file("KnowYourMoney-release.jks")
         storePassword System.getenv("KEYSTORE_PASSWORD")
