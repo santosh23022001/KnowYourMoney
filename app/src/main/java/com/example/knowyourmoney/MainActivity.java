@@ -40,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences preferences;
 
-    private final ArrayList<Transaction> transactions = new ArrayList<>();
+    private final ArrayList<Transaction> transactions =
+            new ArrayList<>();
 
     private double totalIncome = 0;
     private double totalExpense = 0;
@@ -109,14 +110,17 @@ public class MainActivity extends AppCompatActivity {
 
         backupLauncher =
                 registerForActivityResult(
-                        new ActivityResultContracts.StartActivityForResult(),
+                        new ActivityResultContracts
+                                .StartActivityForResult(),
                         result -> {
 
-                            if (result.getResultCode() == RESULT_OK
+                            if (result.getResultCode()
+                                    == RESULT_OK
                                     && result.getData() != null) {
 
                                 Uri uri =
-                                        result.getData().getData();
+                                        result.getData()
+                                                .getData();
 
                                 if (uri != null) {
                                     writeBackup(uri);
@@ -127,14 +131,17 @@ public class MainActivity extends AppCompatActivity {
 
         restoreLauncher =
                 registerForActivityResult(
-                        new ActivityResultContracts.StartActivityForResult(),
+                        new ActivityResultContracts
+                                .StartActivityForResult(),
                         result -> {
 
-                            if (result.getResultCode() == RESULT_OK
+                            if (result.getResultCode()
+                                    == RESULT_OK
                                     && result.getData() != null) {
 
                                 Uri uri =
-                                        result.getData().getData();
+                                        result.getData()
+                                                .getData();
 
                                 if (uri != null) {
                                     readBackup(uri);
@@ -170,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
         historyText.setOnClickListener(
                 v -> showDeleteDialog()
         );
-    }
+            }
 
     private void showAddDialog(boolean income) {
 
@@ -200,7 +207,8 @@ public class MainActivity extends AppCompatActivity {
 
         amountInput.setInputType(
                 android.text.InputType.TYPE_CLASS_NUMBER
-                        | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                        | android.text.InputType
+                        .TYPE_NUMBER_FLAG_DECIMAL
         );
 
         EditText noteInput =
@@ -209,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
         noteInput.setHint("Note");
 
         layout.addView(amountInput);
-
         layout.addView(noteInput);
 
         String title;
@@ -339,14 +346,17 @@ public class MainActivity extends AppCompatActivity {
 
         totalExpense = 0;
 
-        for (Transaction transaction : transactions) {
+        for (Transaction transaction :
+                transactions) {
 
             if (transaction.type.equals("INCOME")) {
 
                 totalIncome +=
                         transaction.amount;
 
-            } else if (transaction.type.equals("EXPENSE")) {
+            } else if (
+                    transaction.type.equals("EXPENSE")
+            ) {
 
                 totalExpense +=
                         transaction.amount;
@@ -433,14 +443,13 @@ public class MainActivity extends AppCompatActivity {
         historyText.setText(
                 history.toString()
         );
-    }
-
-    private void saveTransactions() {
+            private void saveTransactions() {
 
         StringBuilder data =
                 new StringBuilder();
 
-        for (Transaction transaction : transactions) {
+        for (Transaction transaction :
+                transactions) {
 
             data.append(transaction.type)
                     .append("|")
@@ -487,10 +496,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String[] parts =
-                    line.split(
-                            "\\|",
-                            4
-                    );
+                    line.split("\\|", 4);
 
             if (parts.length < 4) {
                 continue;
@@ -542,9 +548,11 @@ public class MainActivity extends AppCompatActivity {
         String[] items =
                 new String[transactions.size()];
 
-        for (int i = 0;
-             i < transactions.size();
-             i++) {
+        for (
+                int i = 0;
+                i < transactions.size();
+                i++
+        ) {
 
             Transaction transaction =
                     transactions.get(i);
@@ -660,8 +668,7 @@ public class MainActivity extends AppCompatActivity {
                 )
                 .show();
     }
-
-    private void createBackup() {
+         private void createBackup() {
 
         Intent intent =
                 new Intent(
@@ -719,288 +726,291 @@ public class MainActivity extends AppCompatActivity {
 
             backup.append(
                     String.format(
-                              Locale.getDefault(),
-        "%.2f",
-        totalExpense
-)
-);
-
-backup.append("\n");
-
-backup.append("Balance: ₹");
-
-backup.append(
-        String.format(
-                Locale.getDefault(),
-                "%.2f",
-                totalIncome - totalExpense
-        )
-);
-
-backup.append("\n\nTRANSACTIONS\n");
-
-backup.append("================\n");
-
-for (Transaction transaction : transactions) {
-
-    backup.append(
-            transaction.type
-    );
-
-    backup.append(" | ₹");
-
-    backup.append(
-            String.format(
-                    Locale.getDefault(),
-                    "%.2f",
-                    transaction.amount
-            )
-    );
-
-    backup.append(" | ");
-
-    backup.append(
-            transaction.note
-    );
-
-    backup.append(" | ");
-
-    backup.append(
-            transaction.date
-    );
-
-    backup.append("\n");
-}
-
-OutputStream outputStream =
-        getContentResolver()
-                .openOutputStream(uri);
-
-if (outputStream == null) {
-
-    Toast.makeText(
-            this,
-            "Could not create backup",
-            Toast.LENGTH_SHORT
-    ).show();
-
-    return;
-}
-
-outputStream.write(
-        backup.toString()
-                .getBytes(
-                        StandardCharsets.UTF_8
-                )
-);
-
-outputStream.close();
-
-Toast.makeText(
-        this,
-        "Backup created successfully",
-        Toast.LENGTH_LONG
-).show();
-
-} catch (Exception e) {
-
-    Toast.makeText(
-            this,
-            "Backup failed",
-            Toast.LENGTH_SHORT
-    ).show();
-}
-
-}
-
-private void chooseBackupFile() {
-
-    Intent intent =
-            new Intent(
-                    Intent.ACTION_OPEN_DOCUMENT
+                            Locale.getDefault(),
+                            "%.2f",
+                            totalExpense
+                    )
             );
 
-    intent.addCategory(
-            Intent.CATEGORY_OPENABLE
-    );
+            backup.append("\n");
 
-    intent.setType(
-            "text/plain"
-    );
+            backup.append(
+                    "Balance: ₹"
+            );
 
-    restoreLauncher.launch(intent);
-}
+            backup.append(
+                    String.format(
+                            Locale.getDefault(),
+                            "%.2f",
+                            totalIncome - totalExpense
+                    )
+            );
 
-private void readBackup(Uri uri) {
+            backup.append(
+                    "\n\nTRANSACTIONS\n"
+            );
 
-    try {
+            backup.append(
+                    "================\n"
+            );
 
-        InputStream inputStream =
-                getContentResolver()
-                        .openInputStream(uri);
+            for (Transaction transaction :
+                    transactions) {
 
-        if (inputStream == null) {
+                backup.append(
+                        transaction.type
+                );
 
-            Toast.makeText(
-                    this,
-                    "Could not open file",
-                    Toast.LENGTH_SHORT
-            ).show();
+                backup.append(" | ₹");
 
-            return;
-        }
-
-        BufferedReader reader =
-                new BufferedReader(
-                        new InputStreamReader(
-                                inputStream,
-                                StandardCharsets.UTF_8
+                backup.append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.2f",
+                                transaction.amount
                         )
                 );
 
-        StringBuilder content =
-                new StringBuilder();
+                backup.append(" | ");
 
-        String line;
+                backup.append(
+                        transaction.note
+                );
 
-        while (
-                (line = reader.readLine()) != null
-        ) {
+                backup.append(" | ");
 
-            content.append(line);
-            content.append("\n");
-        }
+                backup.append(
+                        transaction.date
+                );
 
-        reader.close();
-        inputStream.close();
-
-        restoreBackup(
-                content.toString()
-        );
-
-    } catch (Exception e) {
-
-        Toast.makeText(
-                this,
-                "Restore failed",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-}
-
-private void restoreBackup(String content) {
-
-    try {
-
-        String[] lines =
-                content.split("\\r?\\n");
-
-        ArrayList<Transaction> restored =
-                new ArrayList<>();
-
-        for (String line : lines) {
-
-            String trimmed =
-                    line.trim();
-
-            if (
-                    trimmed.startsWith("INCOME |")
-                            || trimmed.startsWith("EXPENSE |")
-            ) {
-
-                String[] parts =
-                        trimmed.split(
-                                "\\s*\\|\\s*",
-                                4
-                        );
-
-                if (parts.length >= 4) {
-
-                    String type =
-                            parts[0].trim();
-
-                    String amountText =
-                            parts[1]
-                                    .replace("₹", "")
-                                    .trim();
-
-                    double amount =
-                            Double.parseDouble(
-                                    amountText
-                            );
-
-                    String note =
-                            parts[2].trim();
-
-                    String date =
-                            parts[3].trim();
-
-                    restored.add(
-                            new Transaction(
-                                    type,
-                                    amount,
-                                    note,
-                                    date
-                            )
-                    );
-                }
+                backup.append("\n");
             }
-        }
 
-        if (restored.isEmpty()) {
+            OutputStream outputStream =
+                    getContentResolver()
+                            .openOutputStream(uri);
+
+            if (outputStream == null) {
+
+                Toast.makeText(
+                        this,
+                        "Could not create backup",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            outputStream.write(
+                    backup.toString()
+                            .getBytes(
+                                    StandardCharsets.UTF_8
+                            )
+            );
+
+            outputStream.close();
 
             Toast.makeText(
                     this,
-                    "No valid backup data found",
+                    "Backup created successfully",
                     Toast.LENGTH_LONG
             ).show();
 
-            return;
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Backup failed",
+                    Toast.LENGTH_SHORT
+            ).show();
         }
+    }
 
-        new AlertDialog.Builder(this)
-                .setTitle(
-                        "Restore Backup?"
-                )
-                .setMessage(
-                        restored.size()
-                                + " transactions found.\n\n"
-                                + "Current data will be replaced."
-                )
-                .setPositiveButton(
-                        "RESTORE",
-                        (dialog, which) -> {
+    private void chooseBackupFile() {
 
-                            transactions.clear();
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_OPEN_DOCUMENT
+                );
 
-                            transactions.addAll(
-                                    restored
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE
+        );
+
+        intent.setType(
+                "text/plain"
+        );
+
+        restoreLauncher.launch(intent);
+    }
+
+    private void readBackup(Uri uri) {
+
+        try {
+
+            InputStream inputStream =
+                    getContentResolver()
+                            .openInputStream(uri);
+
+            if (inputStream == null) {
+
+                Toast.makeText(
+                        this,
+                        "Could not open file",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    inputStream,
+                                    StandardCharsets.UTF_8
+                            )
+                    );
+
+            StringBuilder content =
+                    new StringBuilder();
+
+            String line;
+
+            while (
+                    (line = reader.readLine()) != null
+            ) {
+
+                content.append(line);
+                content.append("\n");
+            }
+
+            reader.close();
+
+            inputStream.close();
+
+            restoreBackup(
+                    content.toString()
+            );
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Restore failed",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+        private void restoreBackup(String content) {
+
+        try {
+
+            String[] lines =
+                    content.split("\\r?\\n");
+
+            ArrayList<Transaction> restored =
+                    new ArrayList<>();
+
+            for (String line : lines) {
+
+                String trimmed =
+                        line.trim();
+
+                if (trimmed.startsWith("INCOME |")
+                        || trimmed.startsWith("EXPENSE |")) {
+
+                    String[] parts =
+                            trimmed.split(
+                                    "\\s*\\|\\s*",
+                                    4
                             );
 
-                            saveTransactions();
+                    if (parts.length >= 4) {
 
-                            updateDashboard();
+                        String type =
+                                parts[0].trim();
 
-                            Toast.makeText(
-                                    this,
-                                    "Backup restored successfully",
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
-                )
-                .setNegativeButton(
-                        "CANCEL",
-                        null
-                )
-                .show();
+                        String amountText =
+                                parts[1]
+                                        .replace("₹", "")
+                                        .trim();
 
-    } catch (Exception e) {
+                        double amount =
+                                Double.parseDouble(
+                                        amountText
+                                );
 
-        Toast.makeText(
-                this,
-                "Invalid backup file",
-                Toast.LENGTH_LONG
-        ).show();
+                        String note =
+                                parts[2].trim();
+
+                        String date =
+                                parts[3].trim();
+
+                        restored.add(
+                                new Transaction(
+                                        type,
+                                        amount,
+                                        note,
+                                        date
+                                )
+                        );
+                    }
+                }
             }
-}
+
+            if (restored.isEmpty()) {
+
+                Toast.makeText(
+                        this,
+                        "No valid backup data found",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                return;
+            }
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Restore Backup?")
+                    .setMessage(
+                            restored.size()
+                                    + " transactions found.\n\n"
+                                    + "Current data will be replaced."
+                    )
+                    .setPositiveButton(
+                            "RESTORE",
+                            (dialog, which) -> {
+
+                                transactions.clear();
+
+                                transactions.addAll(
+                                        restored
+                                );
+
+                                saveTransactions();
+
+                                updateDashboard();
+
+                                Toast.makeText(
+                                        this,
+                                        "Backup restored successfully",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                    )
+                    .setNegativeButton(
+                            "CANCEL",
+                            null
+                    )
+                    .show();
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Invalid backup file",
+                    Toast.LENGTH_LONG
+            ).show();
+        }
     }
+
+}
