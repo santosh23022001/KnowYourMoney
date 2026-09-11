@@ -671,4 +671,5 @@ public class MainActivity extends AppCompatActivity {
                             "%.2f",
                             totalExpense
                     )
-            
+                }
+    }}
