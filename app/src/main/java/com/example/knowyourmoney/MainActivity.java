@@ -441,9 +441,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         historyText.setText(
-                history.toString()
-        );
-            private void saveTransactions() {
+        history.toString()
+);
+}
+
+private void saveTransactions() {
 
         StringBuilder data =
                 new StringBuilder();
