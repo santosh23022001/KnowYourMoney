@@ -1,31 +1,32 @@
 package com.example.knowyourmoney;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.BufferedWriter;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
-    private TextView balanceText;
-    private TextView historyText;
     private TextView incomeTotalText;
     private TextView expenseTotalText;
+    private TextView balanceText;
+    private TextView historyText;
 
     private Button incomeButton;
     private Button expenseButton;
@@ -35,20 +36,26 @@ public class MainActivity extends Activity {
 
     private SharedPreferences preferences;
 
-    private static final int CREATE_BACKUP_FILE = 100;
-    private static final int OPEN_BACKUP_FILE = 101;
+    private final ArrayList<Transaction> transactions = new ArrayList<>();
 
-    private String backupData = "";
+    private double totalIncome = 0;
+    private double totalExpense = 0;
+
+    private ActivityResultLauncher<Intent> backupLauncher;
+    private ActivityResultLauncher<Intent> restoreLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        balanceText = findViewById(R.id.balanceText);
-        historyText = findViewById(R.id.historyText);
+        preferences = getSharedPreferences("KnowYourMoney", MODE_PRIVATE);
+
         incomeTotalText = findViewById(R.id.incomeTotalText);
         expenseTotalText = findViewById(R.id.expenseTotalText);
+        balanceText = findViewById(R.id.balanceText);
+        historyText = findViewById(R.id.historyText);
 
         incomeButton = findViewById(R.id.incomeButton);
         expenseButton = findViewById(R.id.expenseButton);
@@ -56,332 +63,279 @@ public class MainActivity extends Activity {
         restoreButton = findViewById(R.id.restoreButton);
         clearHistoryButton = findViewById(R.id.clearHistoryButton);
 
-        preferences = getSharedPreferences("money_data", MODE_PRIVATE);
+        setupBackupRestore();
 
-        incomeButton.setOnClickListener(v -> showAddIncomeDialog());
-        expenseButton.setOnClickListener(v -> showAddExpenseDialog());
-        backupButton.setOnClickListener(v -> createBackup());
-        restoreButton.setOnClickListener(v -> chooseBackupFile());
+        loadTransactions();
+        updateDashboard();
+
+        incomeButton.setOnClickListener(v -> showAddTransactionDialog(true));
+
+        expenseButton.setOnClickListener(v -> showAddTransactionDialog(false));
+
         clearHistoryButton.setOnClickListener(v -> showClearHistoryDialog());
 
-        updateBalance();
-        updateHistory();
+        backupButton.setOnClickListener(v -> backupData());
+
+        restoreButton.setOnClickListener(v -> restoreData());
+
+        historyText.setOnClickListener(v -> showDeleteTransactionDialog());
     }
 
-    private void updateBalance() {
+    // ---------------------------------------------------------
+    // TRANSACTION CLASS
+    // ---------------------------------------------------------
 
-        long incomeBits = preferences.getLong(
-                "total_income",
-                Double.doubleToLongBits(0)
-        );
+    private static class Transaction {
 
-        long expenseBits = preferences.getLong(
-                "total_expense",
-                Double.doubleToLongBits(0)
-        );
+        String type;
+        double amount;
+        String note;
+        String date;
 
-        double totalIncome = Double.longBitsToDouble(incomeBits);
-        double totalExpense = Double.longBitsToDouble(expenseBits);
-
-        double balance = totalIncome - totalExpense;
-
-        incomeTotalText.setText(String.format(
-                Locale.getDefault(),
-                "Total Income: ₹%.2f",
-                totalIncome
-        ));
-
-        expenseTotalText.setText(String.format(
-                Locale.getDefault(),
-                "Total Expense: ₹%.2f",
-                totalExpense
-        ));
-
-        balanceText.setText(String.format(
-                Locale.getDefault(),
-                "Balance: ₹%.2f",
-                balance
-        ));
-    }
-
-    private void updateHistory() {
-
-        String history = preferences.getString("history", "");
-
-        if (history.isEmpty()) {
-
-            historyText.setText(
-                    "Transaction History\n\nNo transactions yet."
-            );
-
-        } else {
-
-            historyText.setText(
-                    "Transaction History\n\n" + history
-            );
-
-            historyText.setOnClickListener(v -> showDeleteTransactionDialog());
+        Transaction(String type, double amount, String note, String date) {
+            this.type = type;
+            this.amount = amount;
+            this.note = note;
+            this.date = date;
         }
     }
 
-    private void showAddIncomeDialog() {
+    // ---------------------------------------------------------
+    // ADD INCOME / EXPENSE
+    // ---------------------------------------------------------
 
-        EditText amountInput = new EditText(this);
-        amountInput.setHint("Amount");
-        amountInput.setInputType(InputType.TYPE_CLASS_NUMBER |
-                InputType.TYPE_NUMBER_FLAG_DECIMAL);
+    private void showAddTransactionDialog(boolean isIncome) {
 
-        EditText sourceInput = new EditText(this);
-        sourceInput.setHint("Income Source");
+        final android.widget.EditText amountInput =
+                new android.widget.EditText(this);
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(40, 10, 40, 10);
+        amountInput.setHint("Enter amount");
+        amountInput.setInputType(
+                android.text.InputType.TYPE_CLASS_NUMBER
+                        | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        );
+
+        final android.widget.EditText noteInput =
+                new android.widget.EditText(this);
+
+        noteInput.setHint("Note (optional)");
+
+        android.widget.LinearLayout layout =
+                new android.widget.LinearLayout(this);
+
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        int padding = (int) (20 * getResources().getDisplayMetrics().density);
+
+        layout.setPadding(padding, 10, padding, 0);
 
         layout.addView(amountInput);
-        layout.addView(sourceInput);
+
+        layout.addView(noteInput);
+
+        String title;
+
+        if (isIncome) {
+            title = "Add Income";
+        } else {
+            title = "Add Expense";
+        }
 
         new AlertDialog.Builder(this)
-                .setTitle("Add Income")
+                .setTitle(title)
                 .setView(layout)
-
-                .setPositiveButton("ADD", (dialog, which) -> {
+                .setPositiveButton("SAVE", (dialog, which) -> {
 
                     String amountText =
                             amountInput.getText().toString().trim();
 
-                    String source =
-                            sourceInput.getText().toString().trim();
-
-                    if (amountText.isEmpty() ||
-                            source.isEmpty()) {
-
+                    if (amountText.isEmpty()) {
                         Toast.makeText(
                                 this,
-                                "Enter amount and income source",
+                                "Please enter an amount",
                                 Toast.LENGTH_SHORT
                         ).show();
-
                         return;
                     }
 
+                    double amount;
+
                     try {
-
-                        double amount =
-                                Double.parseDouble(amountText);
-
-                        if (amount <= 0) {
-
-                            Toast.makeText(
-                                    this,
-                                    "Enter a valid amount",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            return;
-                        }
-
-                        long incomeBits =
-                                preferences.getLong(
-                                        "total_income",
-                                        Double.doubleToLongBits(0)
-                                );
-
-                        double oldIncome =
-                                Double.longBitsToDouble(incomeBits);
-
-                        double newIncome =
-                                oldIncome + amount;
-
-                        String oldHistory =
-                                preferences.getString(
-                                        "history",
-                                        ""
-                                );
-
-                        String newEntry =
-                                String.format(
-                                        Locale.getDefault(),
-                                        "Income: ₹%.2f - %s",
-                                        amount,
-                                        source
-                                );
-
-                        String newHistory =
-                                newEntry;
-
-                        if (!oldHistory.isEmpty()) {
-
-                            newHistory =
-                                    newEntry + "\n" + oldHistory;
-                        }
-
-                        preferences.edit()
-                                .putLong(
-                                        "total_income",
-                                        Double.doubleToLongBits(newIncome)
-                                )
-                                .putString(
-                                        "history",
-                                        newHistory
-                                )
-                                .apply();
-
-                        updateBalance();
-                        updateHistory();
-
+                        amount = Double.parseDouble(amountText);
+                    } catch (Exception e) {
                         Toast.makeText(
                                 this,
-                                "Income added successfully!",
+                                "Invalid amount",
                                 Toast.LENGTH_SHORT
                         ).show();
-
-                    } catch (NumberFormatException e) {
-
-                        Toast.makeText(
-                                this,
-                                "Enter a valid amount",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        return;
                     }
-                })
 
+                    if (amount <= 0) {
+                        Toast.makeText(
+                                this,
+                                "Amount must be greater than zero",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return;
+                    }
+
+                    String note =
+                            noteInput.getText().toString().trim();
+
+                    if (note.isEmpty()) {
+                        if (isIncome) {
+                            note = "Income";
+                        } else {
+                            note = "Expense";
+                        }
+                    }
+
+                    String date =
+                            new SimpleDateFormat(
+                                    "dd MMM yyyy, hh:mm a",
+                                    Locale.getDefault()
+                            ).format(new Date());
+
+                    String type;
+
+                    if (isIncome) {
+                        type = "INCOME";
+                    } else {
+                        type = "EXPENSE";
+                    }
+
+                    transactions.add(
+                            new Transaction(
+                                    type,
+                                    amount,
+                                    note,
+                                    date
+                            )
+                    );
+
+                    saveTransactions();
+
+                    updateDashboard();
+
+                    Toast.makeText(
+                            this,
+                            isIncome
+                                    ? "Income added"
+                                    : "Expense added",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                })
                 .setNegativeButton("CANCEL", null)
                 .show();
     }
 
-    private void showAddExpenseDialog() {
+    // ---------------------------------------------------------
+    // UPDATE DASHBOARD
+    // ---------------------------------------------------------
 
-        EditText amountInput = new EditText(this);
-        amountInput.setHint("Amount");
-        amountInput.setInputType(InputType.TYPE_CLASS_NUMBER |
-                InputType.TYPE_NUMBER_FLAG_DECIMAL);
+    private void updateDashboard() {
 
-        EditText categoryInput = new EditText(this);
-        categoryInput.setHint("Expense Category");
+        totalIncome = 0;
+        totalExpense = 0;
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(40, 10, 40, 10);
+        for (Transaction transaction : transactions) {
 
-        layout.addView(amountInput);
-        layout.addView(categoryInput);
+            if (transaction.type.equals("INCOME")) {
+                totalIncome += transaction.amount;
+            }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Add Expense")
-                .setView(layout)
+            if (transaction.type.equals("EXPENSE")) {
+                totalExpense += transaction.amount;
+            }
+        }
 
-                .setPositiveButton("ADD", (dialog, which) -> {
+        double balance = totalIncome - totalExpense;
 
-                    String amountText =
-                            amountInput.getText().toString().trim();
+        incomeTotalText.setText(
+                "₹" + String.format(
+                        Locale.getDefault(),
+                        "%.2f",
+                        totalIncome
+                )
+        );
 
-                    String category =
-                            categoryInput.getText().toString().trim();
+        expenseTotalText.setText(
+                "₹" + String.format(
+                        Locale.getDefault(),
+                        "%.2f",
+                        totalExpense
+                )
+        );
 
-                    if (amountText.isEmpty() ||
-                            category.isEmpty()) {
+        balanceText.setText(
+                "₹" + String.format(
+                        Locale.getDefault(),
+                        "%.2f",
+                        balance
+                )
+        );
 
-                        Toast.makeText(
-                                this,
-                                "Enter amount and expense category",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        return;
-                    }
-
-                    try {
-
-                        double amount =
-                                Double.parseDouble(amountText);
-
-                        if (amount <= 0) {
-
-                            Toast.makeText(
-                                    this,
-                                    "Enter a valid amount",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            return;
-                        }
-
-                        long expenseBits =
-                                preferences.getLong(
-                                        "total_expense",
-                                        Double.doubleToLongBits(0)
-                                );
-
-                        double oldExpense =
-                                Double.longBitsToDouble(expenseBits);
-
-                        double newExpense =
-                                oldExpense + amount;
-
-                        String oldHistory =
-                                preferences.getString(
-                                        "history",
-                                        ""
-                                );
-
-                        String newEntry =
-                                String.format(
-                                        Locale.getDefault(),
-                                        "Expense: ₹%.2f - %s",
-                                        amount,
-                                        category
-                                );
-
-                        String newHistory =
-                                newEntry;
-
-                        if (!oldHistory.isEmpty()) {
-
-                            newHistory =
-                                    newEntry + "\n" + oldHistory;
-                        }
-
-                        preferences.edit()
-                                .putLong(
-                                        "total_expense",
-                                        Double.doubleToLongBits(newExpense)
-                                )
-                                .putString(
-                                        "history",
-                                        newHistory
-                                )
-                                .apply();
-
-                        updateBalance();
-                        updateHistory();
-
-                        Toast.makeText(
-                                this,
-                                "Expense added successfully!",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                    } catch (NumberFormatException e) {
-
-                        Toast.makeText(
-                                this,
-                                "Enter a valid amount",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                })
-
-                .setNegativeButton("CANCEL", null)
-                .show();
+        updateHistory();
     }
+
+    // ---------------------------------------------------------
+    // HISTORY
+    // ---------------------------------------------------------
+
+    private void updateHistory() {
+
+        if (transactions.isEmpty()) {
+
+            historyText.setText(
+                    "No transactions yet.\n\n" +
+                            "Tap ADD INCOME or ADD EXPENSE to begin."
+            );
+
+            return;
+        }
+
+        StringBuilder history = new StringBuilder();
+
+        for (int i = transactions.size() - 1; i >= 0; i--) {
+
+            Transaction transaction = transactions.get(i);
+
+            String symbol;
+
+            if (transaction.type.equals("INCOME")) {
+                symbol = "+";
+            } else {
+                symbol = "-";
+            }
+
+            history.append(symbol)
+                    .append(" ₹")
+                    .append(
+                            String.format(
+                                    Locale.getDefault(),
+                                    "%.2f",
+                                    transaction.amount
+                            )
+                    )
+                    .append("  ")
+                    .append(transaction.note)
+                    .append("\n")
+                    .append(transaction.date)
+                    .append("\n\n");
+        }
+
+        historyText.setText(history.toString());
+    }
+
+    // ---------------------------------------------------------
+    // DELETE TRANSACTION
+    // ---------------------------------------------------------
 
     private void showDeleteTransactionDialog() {
 
-        String history =
-                preferences.getString("history", "");
-
-        if (history.isEmpty()) {
+        if (transactions.isEmpty()) {
 
             Toast.makeText(
                     this,
@@ -392,263 +346,329 @@ public class MainActivity extends Activity {
             return;
         }
 
-        String[] transactions =
-                history.split("\n");
+        String[] items = new String[transactions.size()];
 
-        ArrayList<String> transactionList =
-                new ArrayList<>();
+        for (int i = 0; i < transactions.size(); i++) {
 
-        for (String transaction : transactions) {
+            Transaction transaction = transactions.get(i);
 
-            if (!transaction.trim().isEmpty()) {
+            String symbol;
 
-                transactionList.add(transaction);
+            if (transaction.type.equals("INCOME")) {
+                symbol = "+";
+            } else {
+                symbol = "-";
             }
+
+            items[i] =
+                    symbol
+                            + " ₹"
+                            + String.format(
+                            Locale.getDefault(),
+                            "%.2f",
+                            transaction.amount
+                    )
+                            + " - "
+                            + transaction.note
+                            + "\n"
+                            + transaction.date;
         }
 
-        String[] items =
-                transactionList.toArray(
-                        new String[0]
-                );
-
         new AlertDialog.Builder(this)
-                .setTitle("Select Transaction to Delete")
-
+                .setTitle("Delete Transaction")
                 .setItems(items, (dialog, which) -> {
 
-                    String selected =
-                            transactionList.get(which);
+                    Transaction selected =
+                            transactions.get(which);
 
-                    confirmDeleteTransaction(
-                            selected,
-                            history
-                    );
+                    new AlertDialog.Builder(this)
+                            .setTitle("Delete this transaction?")
+                            .setMessage(
+                                    selected.type
+                                            + "\n₹"
+                                            + String.format(
+                                            Locale.getDefault(),
+                                            "%.2f",
+                                            selected.amount
+                                    )
+                                            + "\n"
+                                            + selected.note
+                            )
+                            .setPositiveButton(
+                                    "DELETE",
+                                    (d, w) -> {
+
+                                        transactions.remove(which);
+
+                                        saveTransactions();
+
+                                        updateDashboard();
+
+                                        Toast.makeText(
+                                                this,
+                                                "Transaction deleted",
+                                                Toast.LENGTH_SHORT
+                                        ).show();
+                                    }
+                            )
+                            .setNegativeButton(
+                                    "CANCEL",
+                                    null
+                            )
+                            .show();
                 })
-
                 .setNegativeButton("CANCEL", null)
                 .show();
     }
 
-    private void confirmDeleteTransaction(
-            String selected,
-            String history) {
-
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Transaction?")
-                .setMessage(
-                        selected +
-                                "\n\nThis transaction will be deleted."
-                )
-
-                .setNegativeButton("CANCEL", null)
-
-                .setPositiveButton(
-                        "DELETE",
-                        (dialog, which) -> {
-
-                            deleteTransaction(
-                                    selected,
-                                    history
-                            );
-                        }
-                )
-                .show();
-    }
-
-    private void deleteTransaction(
-            String selected,
-            String history) {
-
-        String[] transactions =
-                history.split("\n");
-
-        StringBuilder newHistory =
-                new StringBuilder();
-
-        boolean deleted = false;
-
-        double incomeToRemove = 0;
-        double expenseToRemove = 0;
-
-        for (String transaction : transactions) {
-
-            if (!deleted &&
-                    transaction.equals(selected)) {
-
-                deleted = true;
-
-                double amount =
-                        getTransactionAmount(transaction);
-
-                if (transaction.startsWith("Income:")) {
-
-                    incomeToRemove = amount;
-
-                } else if (transaction.startsWith("Expense:")) {
-
-                    expenseToRemove = amount;
-                }
-
-                continue;
-            }
-
-            if (!transaction.trim().isEmpty()) {
-
-                if (newHistory.length() > 0) {
-
-                    newHistory.append("\n");
-                }
-
-                newHistory.append(transaction);
-            }
-        }
-
-        long incomeBits =
-                preferences.getLong(
-                        "total_income",
-                        Double.doubleToLongBits(0)
-                );
-
-        long expenseBits =
-                preferences.getLong(
-                        "total_expense",
-                        Double.doubleToLongBits(0)
-                );
-
-        double oldIncome =
-                Double.longBitsToDouble(incomeBits);
-
-        double oldExpense =
-                Double.longBitsToDouble(expenseBits);
-
-        double newIncome =
-                Math.max(0, oldIncome - incomeToRemove);
-
-        double newExpense =
-                Math.max(0, oldExpense - expenseToRemove);
-
-        preferences.edit()
-                .putLong(
-                        "total_income",
-                        Double.doubleToLongBits(newIncome)
-                )
-                .putLong(
-                        "total_expense",
-                        Double.doubleToLongBits(newExpense)
-                )
-                .putString(
-                        "history",
-                        newHistory.toString()
-                )
-                .apply();
-
-        updateBalance();
-        updateHistory();
-
-        Toast.makeText(
-                this,
-                "Transaction deleted!",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-
-    private double getTransactionAmount(
-            String transaction) {
-
-        try {
-
-            int rupeePosition =
-                    transaction.indexOf("₹");
-
-            int dashPosition =
-                    transaction.indexOf(" - ");
-
-            if (rupeePosition >= 0 &&
-                    dashPosition > rupeePosition) {
-
-                String amountText =
-                        transaction.substring(
-                                rupeePosition + 1,
-                                dashPosition
-                        ).trim();
-
-                return Double.parseDouble(amountText);
-            }
-
-        } catch (Exception e) {
-
-            return 0;
-        }
-
-        return 0;
-    }
+    // ---------------------------------------------------------
+    // CLEAR HISTORY
+    // ---------------------------------------------------------
 
     private void showClearHistoryDialog() {
 
+        if (transactions.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "History is already empty",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         new AlertDialog.Builder(this)
                 .setTitle("Clear All History?")
-
                 .setMessage(
-                        "This will delete all transactions and reset income, expense and balance to ₹0.00."
+                        "This will permanently remove all income " +
+                                "and expense transactions from this app."
                 )
-
-                .setNegativeButton(
-                        "CANCEL",
-                        null
-                )
-
                 .setPositiveButton(
                         "CLEAR",
                         (dialog, which) -> {
 
-                            preferences.edit()
-                                    .putLong(
-                                            "total_income",
-                                            Double.doubleToLongBits(0)
-                                    )
-                                    .putLong(
-                                            "total_expense",
-                                            Double.doubleToLongBits(0)
-                                    )
-                                    .putString(
-                                            "history",
-                                            ""
-                                    )
-                                    .apply();
+                            transactions.clear();
 
-                            updateBalance();
-                            updateHistory();
+                            saveTransactions();
+
+                            updateDashboard();
 
                             Toast.makeText(
                                     this,
-                                    "All history cleared!",
+                                    "History cleared",
                                     Toast.LENGTH_SHORT
                             ).show();
                         }
                 )
+                .setNegativeButton("CANCEL", null)
                 .show();
     }
 
-    private void createBackup() {
+    // ---------------------------------------------------------
+    // SAVE TRANSACTIONS
+    // ---------------------------------------------------------
 
-        backupData =
-                "KNOWYOURMONEY BACKUP\n" +
-                "total_income=" +
-                preferences.getLong(
-                        "total_income",
-                        Double.doubleToLongBits(0)
-                ) +
-                "\n" +
-                "total_expense=" +
-                preferences.getLong(
-                        "total_expense",
-                        Double.doubleToLongBits(0)
-                ) +
-                "\n" +
-                "history=" +
+    private void saveTransactions() {
+
+        JSONArray array = new JSONArray();
+
+        try {
+
+            for (Transaction transaction : transactions) {
+
+                JSONObject object = new JSONObject();
+
+                object.put("type", transaction.type);
+                object.put("amount", transaction.amount);
+                object.put("note", transaction.note);
+                object.put("date", transaction.date);
+
+                array.put(object);
+            }
+
+            preferences.edit()
+                    .putString(
+                            "transactions",
+                            array.toString()
+                    )
+                    .apply();
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Could not save data",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    // ---------------------------------------------------------
+    // LOAD TRANSACTIONS
+    // ---------------------------------------------------------
+
+    private void loadTransactions() {
+
+        transactions.clear();
+
+        String savedData =
                 preferences.getString(
-                        "history",
+                        "transactions",
                         ""
                 );
 
-       
+        if (savedData.isEmpty()) {
+            return;
+        }
+
+        try {
+
+            JSONArray array =
+                    new JSONArray(savedData);
+
+            for (int i = 0; i < array.length(); i++) {
+
+                JSONObject object =
+                        array.getJSONObject(i);
+
+                String type =
+                        object.getString("type");
+
+                double amount =
+                        object.getDouble("amount");
+
+                String note =
+                        object.getString("note");
+
+                String date =
+                        object.getString("date");
+
+                transactions.add(
+                        new Transaction(
+                                type,
+                                amount,
+                                note,
+                                date
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Could not load saved data",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    // ---------------------------------------------------------
+    // BACKUP / RESTORE SETUP
+    // ---------------------------------------------------------
+
+    private void setupBackupRestore() {
+
+        backupLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.StartActivityForResult(),
+                        result -> {
+
+                            if (result.getResultCode()
+                                    == RESULT_OK
+                                    && result.getData() != null) {
+
+                                Uri uri =
+                                        result.getData().getData();
+
+                                writeBackupFile(uri);
+                            }
+                        }
+                );
+
+        restoreLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.StartActivityForResult(),
+                        result -> {
+
+                            if (result.getResultCode()
+                                    == RESULT_OK
+                                    && result.getData() != null) {
+
+                                Uri uri =
+                                        result.getData().getData();
+
+                                readBackupFile(uri);
+                            }
+                        }
+                );
+    }
+
+    // ---------------------------------------------------------
+    // BACKUP DATA
+    // ---------------------------------------------------------
+
+    private void backupData() {
+
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_CREATE_DOCUMENT
+                );
+
+        intent.addCategory(
+                Intent.CATEGORY_OPENABLE
+        );
+
+        intent.setType(
+                "text/plain"
+        );
+
+        intent.putExtra(
+                Intent.EXTRA_TITLE,
+                "KnowYourMoney_Backup.txt"
+        );
+
+        backupLauncher.launch(intent);
+    }
+
+    private void writeBackupFile(Uri uri) {
+
+        try {
+
+            StringBuilder backup =
+                    new StringBuilder();
+
+            backup.append(
+                    "KNOW YOUR MONEY BACKUP\n"
+            );
+
+            backup.append(
+                    "======================\n\n"
+            );
+
+            backup.append(
+                    "Total Income: ₹"
+            );
+
+            backup.append(
+                    String.format(
+                            Locale.getDefault(),
+                            "%.2f",
+                            totalIncome
+                    )
+            );
+
+            backup.append("\n");
+
+            backup.append(
+                    "Total Expense: ₹"
+            );
+
+            backup.append(
+                    String.format(
+                            Locale.getDefault(),
+                            "%.2f",
+                            totalExpense
+                    )
+            
