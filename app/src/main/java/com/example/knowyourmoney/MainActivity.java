@@ -55,17 +55,21 @@ public class MainActivity extends AppCompatActivity {
         double amount;
         String note;
         String date;
+String paymentMode;
 
         Transaction(
-                String type,
-                double amount,
-                String note,
-                String date
+    String type,
+    double amount,
+    String note,
+    String date,
+    String paymentMode
+)
         ) {
             this.type = type;
             this.amount = amount;
             this.note = note;
             this.date = date;
+            this.paymentMode = paymentMode;
         }
     }
 
@@ -318,7 +322,8 @@ public class MainActivity extends AppCompatActivity {
                                             type,
                                             amount,
                                             note,
-                                            date
+                                            date,
+"Cash"
                                     )
                             );
 
