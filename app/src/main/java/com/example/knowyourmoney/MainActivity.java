@@ -529,7 +529,8 @@ private void saveTransactions() {
                                 type,
                                 amount,
                                 note,
-                                date
+                                date,
+"Cash"
                         )
                 );
 
