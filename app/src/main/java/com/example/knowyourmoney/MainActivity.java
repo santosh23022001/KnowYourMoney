@@ -669,7 +669,15 @@ public class MainActivity extends AppCompatActivity {
                     String.format(
                             Locale.getDefault(),
                             "%.2f",
-                            totalExpense
-                    )
-                }
-    }}
+                                    totalExpense
+    );
+
+    } catch (Exception e) {
+        Toast.makeText(
+                this,
+                "Backup failed",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+}
+}
