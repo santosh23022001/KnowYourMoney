@@ -2,97 +2,168 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F7FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Know Your Money"
-            android:textSize="28sp"
+            android:textSize="30sp"
             android:textStyle="bold"
+            android:textColor="#17202A"
             android:gravity="center"
-            android:layout_marginBottom="25dp" />
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="22dp" />
 
         <TextView
-            android:id="@+id/incomeTotalText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total Income: ₹0.00"
-            android:textSize="20sp"
+            android:text="YOUR BALANCE"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:padding="16dp"
-            android:layout_marginBottom="10dp" />
-
-        <TextView
-            android:id="@+id/expenseTotalText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Total Expense: ₹0.00"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:padding="16dp"
-            android:layout_marginBottom="10dp" />
+            android:textColor="#607D8B"
+            android:gravity="center"
+            android:layout_marginBottom="6dp" />
 
         <TextView
             android:id="@+id/balanceText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Balance: ₹0.00"
-            android:textSize="22sp"
+            android:textSize="28sp"
             android:textStyle="bold"
+            android:textColor="#17202A"
             android:gravity="center"
-            android:padding="18dp"
-            android:layout_marginBottom="25dp" />
+            android:padding="24dp"
+            android:background="#FFFFFF"
+            android:layout_marginBottom="18dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:padding="15dp"
+                android:background="#FFFFFF"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="INCOME"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#607D8B"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/incomeTotalText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total Income: ₹0.00"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="#16803C"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:padding="15dp"
+                android:background="#FFFFFF"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="EXPENSE"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#607D8B"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/expenseTotalText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total Expense: ₹0.00"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="#D32F2F"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/incomeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="+ ADD INCOME" />
+            android:text="+  ADD INCOME"
+            android:textStyle="bold"
+            android:layout_marginTop="22dp" />
 
         <Button
             android:id="@+id/expenseButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="- ADD EXPENSE"
-            android:layout_marginTop="12dp" />
+            android:text="-  ADD EXPENSE"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp" />
 
         <Button
             android:id="@+id/backupButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💾 BACKUP DATA"
+            android:text="BACKUP DATA"
             android:layout_marginTop="20dp" />
 
         <Button
             android:id="@+id/restoreButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="♻️ RESTORE DATA"
-            android:layout_marginTop="10dp" />
+            android:text="RESTORE DATA"
+            android:layout_marginTop="8dp" />
 
         <Button
             android:id="@+id/clearHistoryButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🗑️ CLEAR HISTORY"
-            android:layout_marginTop="10dp" />
+            android:text="CLEAR HISTORY"
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/historyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Transaction History\n\nNo transactions yet."
-            android:textSize="18sp"
+            android:textSize="17sp"
             android:textStyle="bold"
-            android:layout_marginTop="25dp"
+            android:textColor="#263238"
+            android:background="#FFFFFF"
+            android:padding="18dp"
+            android:layout_marginTop="22dp"
             android:layout_marginBottom="20dp" />
 
     </LinearLayout>
