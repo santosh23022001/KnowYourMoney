@@ -63,8 +63,7 @@ String paymentMode;
     String note,
     String date,
     String paymentMode
-)
-        ) {
+) {
             this.type = type;
             this.amount = amount;
             this.note = note;
