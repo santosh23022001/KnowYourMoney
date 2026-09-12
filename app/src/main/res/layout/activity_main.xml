@@ -153,8 +153,21 @@
             android:text="CLEAR HISTORY"
             android:layout_marginTop="8dp" />
 
-        <TextView
-            android:id="@+id/historyText"
+      <TextView
+    android:id="@+id/paymentSummaryText"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Payment Summary"
+    android:textSize="17sp"
+    android:textStyle="bold"
+    android:textColor="#263238"
+    android:background="#FFFFFF"
+    android:padding="18dp"
+    android:layout_marginTop="22dp"
+    android:layout_marginBottom="0dp" />
+
+<TextView
+    android:id="@+id/historyText"  
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Transaction History\n\nNo transactions yet."
