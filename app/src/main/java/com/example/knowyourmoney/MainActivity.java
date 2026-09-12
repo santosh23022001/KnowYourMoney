@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView expenseTotalText;
     private TextView balanceText;
     private TextView historyText;
+    private TextView paymentSummaryText;
 
     private Button incomeButton;
     private Button expenseButton;
@@ -99,6 +100,8 @@ String paymentMode;
 
         historyText =
                 findViewById(R.id.historyText);
+        paymentSummaryText =
+    findViewById(R.id.paymentSummaryText);
 
         incomeButton =
                 findViewById(R.id.incomeButton);
@@ -439,6 +442,13 @@ double bankTransferTotal = 0;
                         balance
                 )
         );
+            paymentSummaryText.setText(
+    "Payment Summary\n\n" +
+    "Cash: ₹" + String.format("%.2f", cashTotal) + "\n" +
+    "UPI: ₹" + String.format("%.2f", upiTotal) + "\n" +
+    "Card: ₹" + String.format("%.2f", cardTotal) + "\n" +
+    "Bank Transfer: ₹" + String.format("%.2f", bankTransferTotal)
+);
 
         updateHistory();
     }
