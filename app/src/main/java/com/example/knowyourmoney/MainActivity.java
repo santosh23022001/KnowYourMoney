@@ -490,12 +490,10 @@ private void saveTransactions() {
                                     .replace("|", " ")
                     )
                     .append("|")
-                    .append(transaction.date)
-                .append(transaction.date)
+                    .append(transaction.date)             
 .append("|")
 .append(transaction.paymentMode)
-.append("\n");
-                    .append("\n");
+.append("\n");      
         }
 
         preferences.edit()
