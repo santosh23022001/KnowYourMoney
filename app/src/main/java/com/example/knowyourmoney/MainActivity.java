@@ -344,7 +344,7 @@ layout.addView(paymentModeInput);
                                             amount,
                                             note,
                                             date,
-paymentMode"
+paymentMode;
                                     )
                             );
 
