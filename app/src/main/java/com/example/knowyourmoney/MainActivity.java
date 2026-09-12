@@ -384,7 +384,10 @@ paymentMode
         totalIncome = 0;
 
         totalExpense = 0;
-
+        double cashTotal = 0;
+double upiTotal = 0;
+double cardTotal = 0;
+double bankTransferTotal = 0;
         for (Transaction transaction :
                 transactions) {
 
@@ -399,6 +402,14 @@ paymentMode
 
                 totalExpense +=
                         transaction.amount;
+            if (transaction.paymentMode.equals("Cash")) {
+    cashTotal += transaction.amount;
+} else if (transaction.paymentMode.equals("UPI")) {
+    upiTotal += transaction.amount;
+} else if (transaction.paymentMode.equals("Card")) {
+    cardTotal += transaction.amount;
+} else if (transaction.paymentMode.equals("Bank Transfer")) {
+    bankTransferTotal += transaction.amount;
             }
         }
 
