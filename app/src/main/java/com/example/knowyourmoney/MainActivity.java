@@ -311,6 +311,7 @@ layout.addView(paymentModeInput);
                                             .getText()
                                             .toString()
                                             .trim();
+                            String paymentMode = paymentModeInput.getSelectedItem().toString();
 
                             if (note.isEmpty()) {
 
@@ -343,7 +344,7 @@ layout.addView(paymentModeInput);
                                             amount,
                                             note,
                                             date,
-"Cash"
+paymentMode"
                                     )
                             );
 
@@ -462,6 +463,8 @@ layout.addView(paymentModeInput);
                     .append(transaction.note)
                     .append("\n")
                     .append(transaction.date)
+                .append(" | ")
+.append(transaction.paymentMode)
                     .append("\n\n");
         }
 
@@ -488,6 +491,10 @@ private void saveTransactions() {
                     )
                     .append("|")
                     .append(transaction.date)
+                .append(transaction.date)
+.append("|")
+.append(transaction.paymentMode)
+.append("\n");
                     .append("\n");
         }
 
@@ -523,7 +530,7 @@ private void saveTransactions() {
             }
 
             String[] parts =
-                    line.split("\\|", 4);
+                    line.split("\\|", 5);
 
             if (parts.length < 4) {
                 continue;
@@ -544,6 +551,7 @@ private void saveTransactions() {
 
                 String date =
                         parts[3];
+                String paymentMode = parts.length >= 5 ? parts[4] : "Cash";
 
                 transactions.add(
                         new Transaction(
@@ -551,7 +559,7 @@ private void saveTransactions() {
                                 amount,
                                 note,
                                 date,
-"Cash"
+paymentMode
                         )
                 );
 
@@ -806,12 +814,10 @@ private void saveTransactions() {
                 );
 
                 backup.append(" | ");
-
-                backup.append(
-                        transaction.date
-                );
-
-                backup.append("\n");
+backup.append(transaction.date);
+backup.append(" | ");
+backup.append(transaction.paymentMode);
+backup.append("\n");
             }
 
             OutputStream outputStream =
@@ -950,7 +956,7 @@ private void saveTransactions() {
                     String[] parts =
                             trimmed.split(
                                     "\\s*\\|\\s*",
-                                    4
+                                    5
                             );
 
                     if (parts.length >= 4) {
@@ -973,6 +979,7 @@ private void saveTransactions() {
 
                         String date =
                                 parts[3].trim();
+                        String paymentMode = parts.length >= 5 ? parts[4].trim() : "Cash";
 
                         restored.add(
                                 new Transaction(
@@ -980,7 +987,7 @@ private void saveTransactions() {
                                         amount,
                                         note,
                                         date,
-"Cash"
+paymentMode
                                 )
                         );
                     }
