@@ -360,7 +360,7 @@ layout.addView(paymentModeInput);
         new Date()
     );
 
-String paymentMode =
+paymentMode =
     paymentModeInput.getSelectedItem().toString();
 
 transactions.add(
