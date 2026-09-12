@@ -243,23 +243,11 @@ paymentModeAdapter.setDropDownViewResource(
 );
 
 paymentModeInput.setAdapter(paymentModeAdapter);
-        Spinner paymentModeInput = new Spinner(this);
+        
 
-String[] paymentModes = {
-    "Cash",
-    "UPI",
-    "Card",
-    "Bank Transfer"
-};
 
-ArrayAdapter<String> paymentAdapter =
-        new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                paymentModes
-        );
 
-paymentModeInput.setAdapter(paymentAdapter);
+
 
 layout.addView(amountInput);
 layout.addView(noteInput);
