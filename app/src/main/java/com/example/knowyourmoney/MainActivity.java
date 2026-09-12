@@ -231,6 +231,27 @@ String[] paymentModes = {
     "Bank Transfer"
 };
 
+ArrayAdapter<String> paymentModeAdapter =
+    new ArrayAdapter<>(
+        this,
+        android.R.layout.simple_spinner_item,
+        paymentModes
+    );
+
+paymentModeAdapter.setDropDownViewResource(
+    android.R.layout.simple_spinner_dropdown_item
+);
+
+paymentModeInput.setAdapter(paymentModeAdapter);
+        Spinner paymentModeInput = new Spinner(this);
+
+String[] paymentModes = {
+    "Cash",
+    "UPI",
+    "Card",
+    "Bank Transfer"
+};
+
 ArrayAdapter<String> paymentAdapter =
         new ArrayAdapter<>(
                 this,
@@ -240,10 +261,9 @@ ArrayAdapter<String> paymentAdapter =
 
 paymentModeInput.setAdapter(paymentAdapter);
 
+layout.addView(amountInput);
+layout.addView(noteInput);
 layout.addView(paymentModeInput);
-
-        layout.addView(amountInput);
-        layout.addView(noteInput);
 
         String title;
 
@@ -333,14 +353,17 @@ layout.addView(paymentModeInput);
                             }
 
                             String date =
-                                    new SimpleDateFormat(
-                                            "dd MMM yyyy, hh:mm a",
-                                            Locale.getDefault()
-                                    ).format(
-                                            new Date()
-                                    );
+    new SimpleDateFormat(
+        "dd MMM yyyy, hh:mm a",
+        Locale.getDefault()
+    ).format(
+        new Date()
+    );
 
-                            transactions.add(
+String paymentMode =
+    paymentModeInput.getSelectedItem().toString();
+
+transactions.add(
                                     new Transaction(
                                             type,
                                             amount,
