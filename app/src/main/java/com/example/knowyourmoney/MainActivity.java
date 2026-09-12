@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -218,6 +220,25 @@ String paymentMode;
                 new EditText(this);
 
         noteInput.setHint("Note");
+        Spinner paymentModeInput = new Spinner(this);
+
+String[] paymentModes = {
+    "Cash",
+    "UPI",
+    "Card",
+    "Bank Transfer"
+};
+
+ArrayAdapter<String> paymentAdapter =
+        new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                paymentModes
+        );
+
+paymentModeInput.setAdapter(paymentAdapter);
+
+layout.addView(paymentModeInput);
 
         layout.addView(amountInput);
         layout.addView(noteInput);
