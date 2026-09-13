@@ -790,8 +790,11 @@ transactions.remove(
         which
 );
 
-saveTransactions();
-                                                updateDashboard();
+transactions.clear();
+
+deleteAllTransactionsFromFirestore();
+
+updateDashboard();
 
                                                 Toast.makeText(
                                                         this,
