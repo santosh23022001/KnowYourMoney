@@ -44,10 +44,11 @@ private FirebaseAuth mAuth;
 private FirebaseFirestore db;
 
     private Button incomeButton;
-    private Button expenseButton;
-    private Button backupButton;
-    private Button restoreButton;
-    private Button clearHistoryButton;
+private Button expenseButton;
+private Button backupButton;
+private Button restoreButton;
+private Button clearHistoryButton;
+private Button adminButton;
 
     private SharedPreferences preferences;
 
@@ -222,9 +223,11 @@ loadTransactionsFromFirestore();
                 v -> showAddDialog(false)
         );
 
-        clearHistoryButton.setOnClickListener(
-                v -> clearHistory()
-        );
+        clearHistoryButton =
+        findViewById(R.id.clearHistoryButton);
+
+adminButton =
+        findViewById(R.id.adminButton);
 
         backupButton.setOnClickListener(
                 v -> createBackup()
@@ -235,9 +238,17 @@ loadTransactionsFromFirestore();
         );
 
         historyText.setOnClickListener(
-                v -> showDeleteDialog()
-        );
-            }
+        v -> showDeleteDialog()
+);
+
+adminButton.setOnClickListener(
+        v -> {
+            Intent intent =
+                    new Intent(MainActivity.this, AdminActivity.class);
+            startActivity(intent);
+        }
+);
+}
 
     private void showAddDialog(boolean income) {
 
