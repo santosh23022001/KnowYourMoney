@@ -105,6 +105,24 @@ String paymentMode;
                 }
             });
     }
+    private void deleteAllTransactionsFromFirestore() {
+    if (mAuth.getCurrentUser() == null) {
+        return;
+    }
+
+    String userId = mAuth.getCurrentUser().getUid();
+
+    db.collection("users")
+            .document(userId)
+            .collection("transactions")
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                for (com.google.firebase.firestore.QueryDocumentSnapshot document
+                        : querySnapshot) {
+                    document.getReference().delete();
+                }
+            });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -820,9 +838,11 @@ saveTransactions();
                         "CLEAR",
                         (dialog, which) -> {
 
-                            transactions.clear();
+                            deleteAllTransactionsFromFirestore();
 
-                            saveTransactions();
+transactions.clear();
+
+saveTransactions();
 
                             updateDashboard();
 
