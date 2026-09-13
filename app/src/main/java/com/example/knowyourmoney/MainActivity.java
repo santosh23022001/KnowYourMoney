@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -228,6 +229,13 @@ loadTransactionsFromFirestore();
 
 adminButton =
         findViewById(R.id.adminButton);
+
+if (mAuth.getCurrentUser() != null &&
+        mAuth.getCurrentUser().getUid()
+                .equals("uusR0xG7kyNt8mb3mGy8nqe1klr1")) {
+
+    adminButton.setVisibility(View.VISIBLE);
+}
 
         backupButton.setOnClickListener(
                 v -> createBackup()
