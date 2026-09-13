@@ -94,6 +94,7 @@ Button forgotPassword = findViewById(R.id.forgotPassword);
         } catch (Exception e) {
             return "";
         }
+    }
     private void resetPassword() {
 
     String email =
