@@ -23,7 +23,7 @@
             android:name=".RegisterActivity"
             android:exported="false" />
 
-        <activity name=".MainActivity" android:exported="false" />
+        <activity android:name=".MainActivity" android:exported="false" />
 <activity
     android:name=".AdminActivity"
     android:exported="false" />
