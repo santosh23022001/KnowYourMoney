@@ -847,7 +847,11 @@ transactions.clear();
 
 saveTransactions();
 
-                            updateDashboard();
+saveTransactionToFirestore(
+        transactions.get(transactions.size() - 1)
+);
+
+updateDashboard();
 
                             Toast.makeText(
                                     this,
