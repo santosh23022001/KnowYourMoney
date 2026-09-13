@@ -9,18 +9,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 public class LoginActivity extends Activity {
 
     private EditText emailInput;
-    private EditText passwordInput;
+private EditText passwordInput;
+private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+setContentView(R.layout.activity_login);
+
+mAuth = FirebaseAuth.getInstance();
 
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
@@ -46,23 +51,24 @@ public class LoginActivity extends Activity {
             return;
         }
 
-        SharedPreferences prefs =
-                getSharedPreferences("KnowYourMoney", MODE_PRIVATE);
+        mAuth.signInWithEmailAndPassword(email, password)
+        .addOnCompleteListener(task -> {
 
-        String savedEmail = prefs.getString("email", "");
-        String savedPassword = prefs.getString("passwordHash", "");
+            if (task.isSuccessful()) {
 
-        if (email.equals(savedEmail) &&
-                hashPassword(password).equals(savedPassword)) {
+                Intent intent =
+                        new Intent(LoginActivity.this, MainActivity.class);
 
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+                startActivity(intent);
+                finish();
 
-        } else {
-            Toast.makeText(this, "Invalid email or password",
-                    Toast.LENGTH_SHORT).show();
-        }
+            } else {
+
+                Toast.makeText(this,
+                        "Invalid email or password",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private String hashPassword(String password) {
