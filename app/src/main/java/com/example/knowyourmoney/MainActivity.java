@@ -786,13 +786,18 @@ paymentMode
         transactions.get(which)
 );
 
+Transaction deletedTransaction =
+        transactions.get(which);
+
 transactions.remove(
         which
 );
 
-transactions.clear();
+deleteTransactionFromFirestore(
+        deletedTransaction
+);
 
-deleteAllTransactionsFromFirestore();
+saveTransactions();
 
 updateDashboard();
 
