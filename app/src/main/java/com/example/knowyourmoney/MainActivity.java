@@ -169,6 +169,7 @@ db = FirebaseFirestore.getInstance();
                 );
 
         loadTransactions();
+loadTransactionsFromFirestore();
 
         updateDashboard();
 
