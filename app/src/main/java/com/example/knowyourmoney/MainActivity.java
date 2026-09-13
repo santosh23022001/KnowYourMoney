@@ -82,6 +82,29 @@ String paymentMode;
             this.paymentMode = paymentMode;
         }
     }
+    private void deleteTransactionFromFirestore(Transaction transaction) {
+    if (mAuth.getCurrentUser() == null) {
+        return;
+    }
+
+    String userId = mAuth.getCurrentUser().getUid();
+
+    db.collection("users")
+            .document(userId)
+            .collection("transactions")
+            .whereEqualTo("type", transaction.type)
+            .whereEqualTo("amount", transaction.amount)
+            .whereEqualTo("note", transaction.note)
+            .whereEqualTo("date", transaction.date)
+            .whereEqualTo("paymentMode", transaction.paymentMode)
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                for (com.google.firebase.firestore.QueryDocumentSnapshot document
+                        : querySnapshot) {
+                    document.getReference().delete();
+                }
+            });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -741,12 +764,15 @@ paymentMode
                                             "DELETE",
                                             (d, w) -> {
 
-                                                transactions.remove(
-                                                        which
-                                                );
+                                                deleteTransactionFromFirestore(
+        transactions.get(which)
+);
 
-                                                saveTransactions();
+transactions.remove(
+        which
+);
 
+saveTransactions();
                                                 updateDashboard();
 
                                                 Toast.makeText(
