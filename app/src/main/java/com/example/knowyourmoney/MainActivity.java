@@ -519,7 +519,25 @@ double balance =
         history.toString()
 );
 }
+private void saveTransactionToFirestore(Transaction transaction) {
+    if (mAuth.getCurrentUser() == null) {
+        return;
+    }
 
+    String userId = mAuth.getCurrentUser().getUid();
+
+    java.util.HashMap<String, Object> data = new java.util.HashMap<>();
+    data.put("type", transaction.type);
+    data.put("amount", transaction.amount);
+    data.put("note", transaction.note);
+    data.put("date", transaction.date);
+    data.put("paymentMode", transaction.paymentMode);
+
+    db.collection("users")
+            .document(userId)
+            .collection("transactions")
+            .add(data);
+}
 private void saveTransactions() {
 
         StringBuilder data =
