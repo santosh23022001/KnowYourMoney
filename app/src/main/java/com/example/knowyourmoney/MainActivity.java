@@ -630,6 +630,51 @@ paymentMode
             }
         }
     }
+    private void loadTransactionsFromFirestore() {
+    if (mAuth.getCurrentUser() == null) {
+        return;
+    }
+
+    String userId = mAuth.getCurrentUser().getUid();
+
+    db.collection("users")
+            .document(userId)
+            .collection("transactions")
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+
+                transactions.clear();
+
+                for (com.google.firebase.firestore.QueryDocumentSnapshot document
+                        : querySnapshot) {
+
+                    String type = document.getString("type");
+                    Double amountValue = document.getDouble("amount");
+                    String note = document.getString("note");
+                    String date = document.getString("date");
+                    String paymentMode = document.getString("paymentMode");
+
+                    if (type == null) type = "EXPENSE";
+                    if (amountValue == null) amountValue = 0.0;
+                    if (note == null) note = "";
+                    if (date == null) date = "";
+                    if (paymentMode == null) paymentMode = "Cash";
+
+                    transactions.add(
+                            new Transaction(
+                                    type,
+                                    amountValue,
+                                    note,
+                                    date,
+                                    paymentMode
+                            )
+                    );
+                }
+
+                updateDashboard();
+                updateHistory();
+            });
+    }
 
     private void showDeleteDialog() {
 
