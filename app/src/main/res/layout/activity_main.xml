@@ -131,6 +131,14 @@
             android:text="-  EXPENSE"
             android:textStyle="bold"
             android:layout_marginTop="8dp" />
+        
+        <Button
+    android:id="@+id/adminButton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="👑 ADMIN PANEL"
+    android:layout_marginTop="12dp"
+    android:visibility="gone" />
 
         <Button
             android:id="@+id/backupButton"
