@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
@@ -17,11 +19,14 @@ public class RegisterActivity extends Activity {
     private EditText emailInput;
     private EditText passwordInput;
     private EditText confirmPasswordInput;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+setContentView(R.layout.activity_register);
+
+mAuth = FirebaseAuth.getInstance();
 
         nameInput = findViewById(R.id.nameInput);
         emailInput = findViewById(R.id.emailInput);
@@ -62,24 +67,29 @@ public class RegisterActivity extends Activity {
             return;
         }
 
-        SharedPreferences prefs =
-                getSharedPreferences("KnowYourMoney", MODE_PRIVATE);
+        mAuth.createUserWithEmailAndPassword(email, password)
+        .addOnCompleteListener(task -> {
 
-        prefs.edit()
-                .putString("name", name)
-                .putString("email", email)
-                .putString("passwordHash", hashPassword(password))
-                .apply();
+            if (task.isSuccessful()) {
 
-        Toast.makeText(this,
-                "Account created successfully!",
-                Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Account created successfully",
+                        Toast.LENGTH_SHORT).show();
 
-        Intent intent =
-                new Intent(RegisterActivity.this, LoginActivity.class);
+                Intent intent =
+                        new Intent(RegisterActivity.this, LoginActivity.class);
 
-        startActivity(intent);
-        finish();
+                startActivity(intent);
+                finish();
+
+            } else {
+
+                Toast.makeText(this,
+                        "Registration failed: " +
+                                task.getException().getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private String hashPassword(String password) {
