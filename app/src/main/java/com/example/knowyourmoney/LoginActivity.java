@@ -31,7 +31,8 @@ mAuth = FirebaseAuth.getInstance();
         passwordInput = findViewById(R.id.passwordInput);
 
         Button loginButton = findViewById(R.id.loginButton);
-        Button createAccount = findViewById(R.id.createAccount);
+Button createAccount = findViewById(R.id.createAccount);
+Button forgotPassword = findViewById(R.id.forgotPassword);
 
         loginButton.setOnClickListener(v -> login());
 
@@ -39,6 +40,9 @@ mAuth = FirebaseAuth.getInstance();
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
+        forgotPassword.setOnClickListener(v -> {
+    resetPassword();
+});
     }
 
     private void login() {
@@ -90,5 +94,41 @@ mAuth = FirebaseAuth.getInstance();
         } catch (Exception e) {
             return "";
         }
+    private void resetPassword() {
+
+    String email =
+            emailInput.getText().toString().trim();
+
+    if (email.isEmpty()) {
+
+        Toast.makeText(
+                this,
+                "Enter your email address",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        return;
+    }
+
+    mAuth.sendPasswordResetEmail(email)
+            .addOnCompleteListener(task -> {
+
+                if (task.isSuccessful()) {
+
+                    Toast.makeText(
+                            this,
+                            "Password reset email sent",
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                } else {
+
+                    Toast.makeText(
+                            this,
+                            "Failed to send reset email",
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
+            });
     }
 }
