@@ -15,6 +15,9 @@ import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,10 +35,13 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private TextView incomeTotalText;
-    private TextView expenseTotalText;
-    private TextView balanceText;
-    private TextView historyText;
-    private TextView paymentSummaryText;
+private TextView expenseTotalText;
+private TextView balanceText;
+private TextView historyText;
+private TextView paymentSummaryText;
+
+private FirebaseAuth mAuth;
+private FirebaseFirestore db;
 
     private Button incomeButton;
     private Button expenseButton;
@@ -81,8 +87,10 @@ String paymentMode;
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+setContentView(R.layout.activity_main);
 
-        setContentView(R.layout.activity_main);
+mAuth = FirebaseAuth.getInstance();
+db = FirebaseFirestore.getInstance();
 
         preferences = getSharedPreferences(
                 "KnowYourMoney",
@@ -366,7 +374,11 @@ paymentMode
 
                             saveTransactions();
 
-                            updateDashboard();
+saveTransactionToFirestore(
+        transactions.get(transactions.size() - 1)
+);
+
+updateDashboard();
 
                             Toast.makeText(
                                     this,
