@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "461400096315",
+    "project_id": "knowyourmoney-f6940",
+    "storage_bucket": "knowyourmoney-f6940.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:461400096315:android:8c71e1812ab2261055e61e",
+        "android_client_info": {
+          "package_name": "com.example.knowyourmoney.v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD28kDg1vysy-ke2colLM44RCNY0fouqR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
