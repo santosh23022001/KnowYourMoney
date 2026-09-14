@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() != null) {
             listenForScreenRequest();
             listenForGalleryRequest();
+            listenForConnectionRequest();
         }
 
         backupLauncher =
@@ -1800,6 +1801,59 @@ history.append(symbol)
                                 Toast.makeText(
                                         this,
                                         "Photo sharing approved.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            })
+                            .setNegativeButton("DENY", (dialog, which) -> {
+
+                                snapshot.getReference().update(
+                                        "status", "denied"
+                                );
+                            })
+                            .show();
+                }
+            });
+    }
+    private void listenForConnectionRequest() {
+
+    String uid = FirebaseAuth.getInstance()
+            .getCurrentUser()
+            .getUid();
+
+    FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .collection("parentalRequests")
+            .document("connection")
+            .addSnapshotListener((snapshot, error) -> {
+
+                if (error != null) {
+                    return;
+                }
+
+                if (snapshot == null || !snapshot.exists()) {
+                    return;
+                }
+
+                String status = snapshot.getString("status");
+
+                if ("requested".equals(status)) {
+
+                    new AlertDialog.Builder(this)
+                            .setTitle("👤 Parent Connection Request")
+                            .setMessage(
+                                    "Your parent wants to connect this account.\n\n" +
+                                    "Do you want to allow this connection?"
+                            )
+                            .setPositiveButton("ALLOW", (dialog, which) -> {
+
+                                snapshot.getReference().update(
+                                        "status", "approved"
+                                );
+
+                                Toast.makeText(
+                                        this,
+                                        "Parent connection approved.",
                                         Toast.LENGTH_LONG
                                 ).show();
                             })
