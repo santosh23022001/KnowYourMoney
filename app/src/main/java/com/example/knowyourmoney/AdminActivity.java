@@ -62,6 +62,14 @@ public class AdminActivity extends Activity {
 parentalButton.setText("👨‍👦 PARENTAL SAFETY");
 
 mainLayout.addView(parentalButton);
+        Button appUsageButton = new Button(this);
+appUsageButton.setText("📊 APP USAGE");
+
+mainLayout.addView(appUsageButton);
+
+appUsageButton.setOnClickListener(v -> {
+    loadAllAppUsage();
+});
 
 parentalButton.setOnClickListener(v -> {
     Intent intent =
