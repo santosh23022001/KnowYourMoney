@@ -1366,9 +1366,14 @@ paymentMode
 private void listenForScreenRequest() {
 
     String uid = FirebaseAuth.getInstance()
-            .getCurrentUser()
-            .getUid();
+        .getCurrentUser()
+        .getUid();
 
+Toast.makeText(
+        this,
+        "Child UID: " + uid,
+        Toast.LENGTH_LONG
+).show();
     FirebaseFirestore.getInstance()
             .collection("users")
             .document(uid)
