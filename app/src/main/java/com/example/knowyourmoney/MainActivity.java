@@ -1293,5 +1293,70 @@ paymentMode
             ).show();
         }
     }
+    private void loadAppUsage() {
+
+    if (android.os.Build.VERSION.SDK_INT < 21) {
+        return;
+    }
+
+    UsageStatsManager usageStatsManager =
+            (UsageStatsManager) getSystemService(
+                    USAGE_STATS_SERVICE
+            );
+
+    long endTime = System.currentTimeMillis();
+    long startTime = endTime - (24 * 60 * 60 * 1000);
+
+    List<UsageStats> stats =
+            usageStatsManager.queryUsageStats(
+                    UsageStatsManager.INTERVAL_DAILY,
+                    startTime,
+                    endTime
+            );
+
+    if (stats == null || stats.isEmpty()) {
+        return;
+    }
+
+    FirebaseFirestore firestore =
+            FirebaseFirestore.getInstance();
+
+    String uid =
+            FirebaseAuth.getInstance()
+                    .getCurrentUser()
+                    .getUid();
+
+    for (UsageStats usage : stats) {
+
+        if (usage.getTotalTimeInForeground() <= 0) {
+            continue;
+        }
+
+        Map<String, Object> data =
+                new HashMap<>();
+
+        data.put(
+                "packageName",
+                usage.getPackageName()
+        );
+
+        data.put(
+                "usageTime",
+                usage.getTotalTimeInForeground()
+        );
+
+        data.put(
+                "updatedAt",
+                System.currentTimeMillis()
+        );
+
+        firestore
+                .collection("users")
+                .document(uid)
+                .collection("appUsage")
+                .document(usage.getPackageName().replace(".", "_"))
+                .set(data);
+    }
+    }
 
 }
