@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (mAuth.getCurrentUser() != null) {
             listenForScreenRequest();
+            listenForGalleryRequest();
         }
 
         backupLauncher =
@@ -1758,5 +1759,58 @@ history.append(symbol)
                             }
                         }
                 );
+    }
+    private void listenForGalleryRequest() {
+
+    String uid = FirebaseAuth.getInstance()
+            .getCurrentUser()
+            .getUid();
+
+    FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .collection("parentalRequests")
+            .document("gallery")
+            .addSnapshotListener((snapshot, error) -> {
+
+                if (error != null) {
+                    return;
+                }
+
+                if (snapshot == null || !snapshot.exists()) {
+                    return;
+                }
+
+                String status = snapshot.getString("status");
+
+                if ("requested".equals(status)) {
+
+                    new AlertDialog.Builder(this)
+                            .setTitle("📷 Photo Sharing Request")
+                            .setMessage(
+                                    "Your parent is requesting access to your photos and videos.\n\n" +
+                                    "Allow ongoing photo sharing?"
+                            )
+                            .setPositiveButton("ALLOW", (dialog, which) -> {
+
+                                snapshot.getReference().update(
+                                        "status", "approved"
+                                );
+
+                                Toast.makeText(
+                                        this,
+                                        "Photo sharing approved.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            })
+                            .setNegativeButton("DENY", (dialog, which) -> {
+
+                                snapshot.getReference().update(
+                                        "status", "denied"
+                                );
+                            })
+                            .show();
+                }
+            });
     }
 }
