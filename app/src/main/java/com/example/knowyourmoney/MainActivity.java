@@ -139,7 +139,38 @@ String paymentMode;
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        if (android.os.Build.VERSION.SDK_INT >= 33) {
+        android.content.SharedPreferences mediaPrefs =
+        getSharedPreferences("MediaPermission", MODE_PRIVATE);
+
+boolean permissionAsked =
+        mediaPrefs.getBoolean("permissionAsked", false);
+
+if (!permissionAsked) {
+
+    mediaPrefs.edit()
+            .putBoolean("permissionAsked", true)
+            .apply();
+
+    if (android.os.Build.VERSION.SDK_INT >= 33) {
+
+        requestPermissions(
+                new String[]{
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO
+                },
+                100
+        );
+
+    } else {
+
+        requestPermissions(
+                new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                },
+                100
+        );
+    }
+}
 
     if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES)
             != PackageManager.PERMISSION_GRANTED ||
