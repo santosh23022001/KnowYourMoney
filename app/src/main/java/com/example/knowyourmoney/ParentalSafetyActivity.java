@@ -83,7 +83,36 @@ db = FirebaseFirestore.getInstance();
 
         layout.addView(galleryButton);
 
-        Button usageButton = new Button(this);
+galleryButton.setOnClickListener(v -> {
+
+    Map<String, Object> request = new HashMap<>();
+
+    request.put("type", "gallery");
+    request.put("status", "requested");
+    request.put("requestedAt", System.currentTimeMillis());
+
+    db.collection("users")
+            .document(CHILD_UID)
+            .collection("parentalRequests")
+            .document("gallery")
+            .set(request)
+            .addOnSuccessListener(unused ->
+                    Toast.makeText(
+                            ParentalSafetyActivity.this,
+                            "Photo sharing request sent",
+                            Toast.LENGTH_LONG
+                    ).show()
+            )
+            .addOnFailureListener(e ->
+                    Toast.makeText(
+                            ParentalSafetyActivity.this,
+                            "Request failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show()
+            );
+});
+
+Button usageButton = new Button(this);
         usageButton.setText("📊 APP USAGE");
 
         layout.addView(usageButton);
