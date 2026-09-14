@@ -169,6 +169,8 @@ String paymentMode;
     }
         }
 setContentView(R.layout.activity_main);
+
+listenForScreenRequest();
         if (android.os.Build.VERSION.SDK_INT >= 21) {
 
     android.app.AppOpsManager appOps =
@@ -1360,4 +1362,53 @@ paymentMode
     }
     }
 
+private void listenForScreenRequest() {
+
+    String uid = FirebaseAuth.getInstance()
+            .getCurrentUser()
+            .getUid();
+
+    FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .collection("parentalRequests")
+            .document("screen")
+            .addSnapshotListener((snapshot, error) -> {
+
+                if (error != null || snapshot == null || !snapshot.exists()) {
+                    return;
+                }
+
+                String status = snapshot.getString("status");
+
+                if ("requested".equals(status)) {
+
+                    new AlertDialog.Builder(this)
+                            .setTitle("📺 Screen Sharing Request")
+                            .setMessage(
+                                    "Your parent is requesting screen sharing. " +
+                                    "Do you want to allow it?"
+                            )
+                            .setPositiveButton("ALLOW", (dialog, which) -> {
+
+                                snapshot.getReference().update(
+                                        "status", "approved"
+                                );
+
+                                Toast.makeText(
+                                        this,
+                                        "Approved. Screen sharing can now be started.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            })
+                            .setNegativeButton("DENY", (dialog, which) -> {
+
+                                snapshot.getReference().update(
+                                        "status", "denied"
+                                );
+                            })
+                            .show();
+                }
+            });
+}
 }
