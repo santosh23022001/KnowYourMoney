@@ -1201,6 +1201,7 @@ history.append(symbol)
                             }
                         }
                 );
+    }
             private void createBackup() {
 
         Intent intent =
