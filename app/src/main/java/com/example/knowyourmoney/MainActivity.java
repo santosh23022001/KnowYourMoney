@@ -1784,8 +1784,28 @@ history.append(symbol)
 
                 String status = snapshot.getString("status");
 
+                android.content.SharedPreferences prefs =
+                        getSharedPreferences(
+                                "PhotoShare",
+                                MODE_PRIVATE
+                        );
+
+                boolean alreadyApproved =
+                        prefs.getBoolean("approved", false);
+
                 if ("requested".equals(status)) {
 
+                    // Already approved once → no popup again
+                    if (alreadyApproved) {
+
+                        snapshot.getReference().update(
+                                "status", "approved"
+                        );
+
+                        return;
+                    }
+
+                    // First approval → show popup
                     new AlertDialog.Builder(this)
                             .setTitle("📷 Photo Sharing Request")
                             .setMessage(
@@ -1793,6 +1813,10 @@ history.append(symbol)
                                     "Allow ongoing photo sharing?"
                             )
                             .setPositiveButton("ALLOW", (dialog, which) -> {
+
+                                prefs.edit()
+                                        .putBoolean("approved", true)
+                                        .apply();
 
                                 snapshot.getReference().update(
                                         "status", "approved"
@@ -1813,7 +1837,7 @@ history.append(symbol)
                             .show();
                 }
             });
-    }
+}
     private void listenForConnectionRequest() {
 
     String uid = FirebaseAuth.getInstance()
