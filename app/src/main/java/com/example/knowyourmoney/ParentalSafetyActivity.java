@@ -16,7 +16,7 @@ public class ParentalSafetyActivity extends Activity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private static final String CHILD_UID =
-        "OMdJfSnRMsSACKxdGasp9QXfTgAv2";
+        "OMdJfSnRMsSACKxdGasp9QfTgAv2";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
