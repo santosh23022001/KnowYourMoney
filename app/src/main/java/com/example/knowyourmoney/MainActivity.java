@@ -581,7 +581,7 @@ double bankTransferTotal = 0;
 } else if (transaction.paymentMode.equals("Bank Transfer")) {
     bankTransferTotal += transaction.amount;
             }
-
+            }
 double balance =
                 totalIncome - totalExpense;
 
