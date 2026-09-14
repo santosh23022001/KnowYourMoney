@@ -1376,9 +1376,29 @@ private void listenForScreenRequest() {
             .document("screen")
             .addSnapshotListener((snapshot, error) -> {
 
-                if (error != null || snapshot == null || !snapshot.exists()) {
-                    return;
-                }
+                if (error != null) {
+    Toast.makeText(
+            this,
+            "Listener error: " + error.getMessage(),
+            Toast.LENGTH_LONG
+    ).show();
+    return;
+}
+
+if (snapshot == null || !snapshot.exists()) {
+    Toast.makeText(
+            this,
+            "Screen request document not found",
+            Toast.LENGTH_LONG
+    ).show();
+    return;
+}
+
+Toast.makeText(
+        this,
+        "Screen request received",
+        Toast.LENGTH_LONG
+).show();
 
                 String status = snapshot.getString("status");
 
