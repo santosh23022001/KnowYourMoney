@@ -5,12 +5,24 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ParentalSafetyActivity extends Activity {
 
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    private static final String CHILD_UID =
+        "OMdJfSnRMsSACKxdGasp9QXfTgAv2";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+mAuth = FirebaseAuth.getInstance();
+db = FirebaseFirestore.getInstance();
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -37,6 +49,34 @@ public class ParentalSafetyActivity extends Activity {
         screenButton.setText("📺 REQUEST SCREEN SHARING");
 
         layout.addView(screenButton);
+        screenButton.setOnClickListener(v -> {
+
+    Map<String, Object> request = new HashMap<>();
+
+    request.put("type", "screen");
+    request.put("status", "requested");
+    request.put("requestedAt", System.currentTimeMillis());
+
+    db.collection("users")
+            .document(CHILD_UID)
+            .collection("parentalRequests")
+            .document("screen")
+            .set(request)
+            .addOnSuccessListener(unused ->
+                    Toast.makeText(
+                            ParentalSafetyActivity.this,
+                            "Screen sharing request sent.",
+                            Toast.LENGTH_LONG
+                    ).show()
+            )
+            .addOnFailureListener(e ->
+                    Toast.makeText(
+                            ParentalSafetyActivity.this,
+                            "Request failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show()
+            );
+});
 
         Button galleryButton = new Button(this);
         galleryButton.setText("🖼️ SHARE PHOTOS");
