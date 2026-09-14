@@ -190,6 +190,7 @@ setContentView(R.layout.activity_main);
         startActivity(intent);
     }
         }
+        loadAppUsage();
 
 mAuth = FirebaseAuth.getInstance();
 db = FirebaseFirestore.getInstance();
