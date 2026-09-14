@@ -3,6 +3,7 @@ package com.example.knowyourmoney;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.provider.Settings;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -162,6 +163,27 @@ String paymentMode;
     }
         }
 setContentView(R.layout.activity_main);
+        if (android.os.Build.VERSION.SDK_INT >= 21) {
+
+    android.app.AppOpsManager appOps =
+            (android.app.AppOpsManager) getSystemService(
+                    android.content.Context.APP_OPS_SERVICE);
+
+    int mode = appOps.checkOpNoThrow(
+            "android:get_usage_stats",
+            android.os.Process.myUid(),
+            getPackageName()
+    );
+
+    if (mode != android.app.AppOpsManager.MODE_ALLOWED) {
+
+        Intent intent = new Intent(
+                Settings.ACTION_USAGE_ACCESS_SETTINGS
+        );
+
+        startActivity(intent);
+    }
+        }
 
 mAuth = FirebaseAuth.getInstance();
 db = FirebaseFirestore.getInstance();
