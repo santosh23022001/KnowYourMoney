@@ -1,7 +1,9 @@
 package com.example.knowyourmoney;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -130,6 +132,35 @@ String paymentMode;
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+
+    if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES)
+            != PackageManager.PERMISSION_GRANTED ||
+        checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO)
+            != PackageManager.PERMISSION_GRANTED) {
+
+        requestPermissions(
+                new String[]{
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO
+                },
+                100
+        );
+    }
+
+} else {
+
+    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+
+        requestPermissions(
+                new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                },
+                100
+        );
+    }
+        }
 setContentView(R.layout.activity_main);
 
 mAuth = FirebaseAuth.getInstance();
