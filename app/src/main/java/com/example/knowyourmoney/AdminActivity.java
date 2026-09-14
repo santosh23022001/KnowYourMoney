@@ -1,6 +1,7 @@
 package com.example.knowyourmoney;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.Button;
@@ -61,6 +62,12 @@ public class AdminActivity extends Activity {
 parentalButton.setText("👨‍👦 PARENTAL SAFETY");
 
 mainLayout.addView(parentalButton);
+
+parentalButton.setOnClickListener(v -> {
+    Intent intent =
+            new Intent(AdminActivity.this, ParentalSafetyActivity.class);
+    startActivity(intent);
+});
 
         transactionLayout = new LinearLayout(this);
         transactionLayout.setOrientation(LinearLayout.VERTICAL);
