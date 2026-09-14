@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +60,74 @@ public class AdminActivity extends Activity {
 
         mainLayout.addView(info);
         Button parentalButton = new Button(this);
+        // CHILD CONTROL
+TextView childTitle = new TextView(this);
+childTitle.setText("👤 CHILD CONTROL");
+childTitle.setTextSize(20);
+childTitle.setPadding(0, 20, 0, 10);
+mainLayout.addView(childTitle);
+
+EditText childEmail = new EditText(this);
+childEmail.setHint("Child Gmail");
+childEmail.setSingleLine(true);
+mainLayout.addView(childEmail);
+
+EditText childUid = new EditText(this);
+childUid.setHint("Child UID");
+childUid.setSingleLine(true);
+mainLayout.addView(childUid);
+
+Button addChildButton = new Button(this);
+addChildButton.setText("➕ ADD CHILD & SEND REQUEST");
+mainLayout.addView(addChildButton);
+
+addChildButton.setOnClickListener(v -> {
+
+    String email = childEmail.getText().toString().trim();
+    String uid = childUid.getText().toString().trim();
+
+    if (email.isEmpty() || uid.isEmpty()) {
+        Toast.makeText(
+                this,
+                "Enter Child Gmail and UID",
+                Toast.LENGTH_SHORT
+        ).show();
+        return;
+    }
+
+    Map<String, Object> request = new HashMap<>();
+
+    request.put("type", "connect");
+    request.put("status", "requested");
+    request.put("parentEmail", mAuth.getCurrentUser().getEmail());
+    request.put("childEmail", email);
+    request.put("requestedAt", System.currentTimeMillis());
+
+    db.collection("users")
+            .document(uid)
+            .collection("parentalRequests")
+            .document("connection")
+            .set(request)
+            .addOnSuccessListener(unused -> {
+
+                Toast.makeText(
+                        this,
+                        "Child connection request sent",
+                        Toast.LENGTH_LONG
+                ).show();
+
+                childEmail.setEnabled(false);
+                childUid.setEnabled(false);
+                addChildButton.setEnabled(false);
+            })
+            .addOnFailureListener(e ->
+                    Toast.makeText(
+                            this,
+                            "Request failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show()
+            );
+});
 parentalButton.setText("👨‍👦 PARENTAL SAFETY");
 
 mainLayout.addView(parentalButton);
