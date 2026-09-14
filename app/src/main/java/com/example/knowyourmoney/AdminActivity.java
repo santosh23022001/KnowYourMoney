@@ -180,6 +180,102 @@ parentalButton.setOnClickListener(v -> {
 
     transactionLayout.removeAllViews();
 
+    db.collectionGroup("appUsage")
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+
+                transactionLayout.removeAllViews();
+
+                android.content.pm.PackageManager pm =
+                        getPackageManager();
+
+                for (QueryDocumentSnapshot document : querySnapshot) {
+
+                    String packageName =
+                            document.getString("packageName");
+
+                    Long usageTime =
+                            document.getLong("usageTime");
+
+                    if (packageName == null ||
+                            usageTime == null ||
+                            usageTime <= 0) {
+                        continue;
+                    }
+
+                    try {
+                        android.content.pm.ApplicationInfo appInfo =
+                                pm.getApplicationInfo(packageName, 0);
+
+                        if ((appInfo.flags &
+                                android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
+                            continue;
+                        }
+
+                        String appName =
+                                pm.getApplicationLabel(appInfo).toString();
+
+                        long minutes =
+                                usageTime / (1000 * 60);
+
+                        String usage;
+
+                        if (minutes >= 60) {
+                            usage =
+                                    (minutes / 60) + "h " +
+                                    (minutes % 60) + "m";
+                        } else {
+                            usage =
+                                    minutes + "m";
+                        }
+
+                        String userId =
+                                document.getReference()
+                                        .getParent()
+                                        .getParent()
+                                        .getId();
+
+                        TextView usageText =
+                                new TextView(this);
+
+                        usageText.setText(
+                                "👤 User: " + userId +
+                                "\n📱 " + appName +
+                                " — " + usage
+                        );
+
+                        usageText.setTextSize(18);
+                        usageText.setPadding(
+                                0, 16, 0, 16
+                        );
+
+                        transactionLayout.addView(
+                                usageText
+                        );
+
+                    } catch (Exception ignored) {
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+
+                transactionLayout.removeAllViews();
+
+                TextView error =
+                        new TextView(this);
+
+                error.setText(
+                        "Failed to load app usage\n" +
+                        e.getMessage()
+                );
+
+                error.setTextSize(17);
+                transactionLayout.addView(error);
+            });
+    }
+
+    transactionLayout.removeAllViews();
+
     TextView loading = new TextView(this);
     loading.setText("Loading app usage...");
     loading.setTextSize(18);
