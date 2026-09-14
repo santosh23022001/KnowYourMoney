@@ -28,6 +28,10 @@
     android:name=".AdminActivity"
     android:exported="false" />
 
+<activity
+    android:name=".ParentalSafetyActivity"
+    android:exported="false" />
+
     </application>
 
 </manifest>
