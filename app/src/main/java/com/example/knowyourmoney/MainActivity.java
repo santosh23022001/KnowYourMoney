@@ -582,6 +582,7 @@ double bankTransferTotal = 0;
     bankTransferTotal += transaction.amount;
             }
             }
+            }
 double balance =
                 totalIncome - totalExpense;
 
