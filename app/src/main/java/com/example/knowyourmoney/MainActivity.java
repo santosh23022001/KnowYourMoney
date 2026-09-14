@@ -172,10 +172,13 @@ if (!permissionAsked) {
     }
 }
 
-    if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES)
-            != PackageManager.PERMISSION_GRANTED ||
-        checkSelfPermission(Manifest.permission.READ_MEDIA_VIDEO)
-            != PackageManager.PERMISSION_GRANTED) {
+    if (!permissionAsked) {
+
+    mediaPrefs.edit()
+            .putBoolean("permissionAsked", true)
+            .apply();
+
+    if (android.os.Build.VERSION.SDK_INT >= 33) {
 
         requestPermissions(
                 new String[]{
@@ -184,12 +187,8 @@ if (!permissionAsked) {
                 },
                 100
         );
-    }
 
-} else {
-
-    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
+    } else {
 
         requestPermissions(
                 new String[]{
@@ -198,10 +197,11 @@ if (!permissionAsked) {
                 100
         );
     }
-        }
+}
+
 setContentView(R.layout.activity_main);
 
-        if (android.os.Build.VERSION.SDK_INT >= 21) {
+    
 
     android.app.AppOpsManager appOps =
             (android.app.AppOpsManager) getSystemService(
