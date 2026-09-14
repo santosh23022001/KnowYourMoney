@@ -1760,4 +1760,3 @@ history.append(symbol)
                 );
     }
 }
-    }
