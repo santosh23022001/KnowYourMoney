@@ -170,7 +170,6 @@ String paymentMode;
         }
 setContentView(R.layout.activity_main);
 
-listenForScreenRequest();
         if (android.os.Build.VERSION.SDK_INT >= 21) {
 
     android.app.AppOpsManager appOps =
@@ -196,6 +195,8 @@ listenForScreenRequest();
 
 mAuth = FirebaseAuth.getInstance();
 db = FirebaseFirestore.getInstance();
+
+listenForScreenRequest();
 
         preferences = getSharedPreferences(
                 "KnowYourMoney",
