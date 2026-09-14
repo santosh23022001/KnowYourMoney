@@ -13,6 +13,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class AdminActivity extends Activity {
 
     private static final String ADMIN_UID =
