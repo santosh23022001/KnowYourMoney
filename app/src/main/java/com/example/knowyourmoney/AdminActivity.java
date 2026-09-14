@@ -176,4 +176,98 @@ parentalButton.setOnClickListener(v -> {
                     transactionLayout.addView(error);
                 });
     }
+    private void loadAllAppUsage() {
+
+    transactionLayout.removeAllViews();
+
+    TextView loading = new TextView(this);
+    loading.setText("Loading app usage...");
+    loading.setTextSize(18);
+    transactionLayout.addView(loading);
+
+    db.collectionGroup("appUsage")
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+
+                transactionLayout.removeAllViews();
+
+                if (querySnapshot.isEmpty()) {
+                    TextView empty = new TextView(this);
+                    empty.setText("No app usage data found.");
+                    empty.setTextSize(18);
+                    transactionLayout.addView(empty);
+                    return;
+                }
+
+                android.content.pm.PackageManager pm =
+                        getPackageManager();
+
+                for (QueryDocumentSnapshot document : querySnapshot) {
+
+                    String packageName =
+                            document.getString("packageName");
+
+                    Long usageTime =
+                            document.getLong("usageTime");
+
+                    String userId =
+                            document.getReference()
+                                    .getParent()
+                                    .getParent()
+                                    .getId();
+
+                    String appName = packageName;
+
+                    try {
+                        appName = pm.getApplicationLabel(
+                                pm.getApplicationInfo(
+                                        packageName,
+                                        0
+                                )
+                        ).toString();
+                    } catch (Exception ignored) {
+                    }
+
+                    long minutes = 0;
+
+                    if (usageTime != null) {
+                        minutes =
+                                usageTime / (1000 * 60);
+                    }
+
+                    TextView usageText =
+                            new TextView(this);
+
+                    usageText.setText(
+                            "User ID: " + userId +
+                            "\nApp: " + appName +
+                            "\nPackage: " + packageName +
+                            "\nUsage: " + minutes + " minutes" +
+                            "\n-------------------------"
+                    );
+
+                    usageText.setTextSize(17);
+                    usageText.setPadding(0, 16, 0, 16);
+
+                    transactionLayout.addView(
+                            usageText
+                    );
+                }
+            })
+            .addOnFailureListener(e -> {
+
+                transactionLayout.removeAllViews();
+
+                TextView error =
+                        new TextView(this);
+
+                error.setText(
+                        "Failed to load app usage\n" +
+                        e.getMessage()
+                );
+
+                error.setTextSize(17);
+                transactionLayout.addView(error);
+            });
+    }
 }
